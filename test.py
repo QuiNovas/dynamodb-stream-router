@@ -13,11 +13,13 @@ router = StreamRouter(threaded=False)
 exp = HasChanged(
     ["source", "target"]) & Old("target").get("foo").eq("bar")
 exp = HasChanged(["source", "target"]) & Old("target").get("foo").is_type(str)
-print(str(exp))
-@router.update(
-    condition_expression=HasChanged(["source", "target"]) & Old("target")["bar"][0].is_type(list)
-)
 
+print(str(exp))
+
+
+@router.update(
+    condition_expression=HasChanged(["source", "target"]) & Old("target")["bar"][0].is_type(str) & New("target").get("bazz").as_bool().invert()
+)
 def edge(item):
     return "CALLED ROUTE!!!!!!!!!"
 
@@ -26,9 +28,10 @@ items = [
     {
         "operation": "UPDATE",
         "old": {"type": "Edge", "source": "Node1", "target": {"bar": ["foo"]}},
-        "new": {"type": "Edge", "source": "Node1", "target": "Node3"}
+        "new": {"type": "Edge", "source": "Node1", "target": {"baz": "Node3"}}
     }
 ]
+
 
 def handler():
     start = time()
@@ -38,4 +41,6 @@ def handler():
         x.value for x in res
     ])
 
-handler()
+
+if __name__ == "__main__":
+    handler()

@@ -72,6 +72,9 @@ class Expression(ExpressionBase):
     def evaluate(self, item=None):
         return self(item=item)
 
+    def invert(self):
+        return Expression(f"not {self.exp}")
+
 
 class Group(ExpressionBase):
     def __init__(self, exp):
@@ -169,6 +172,12 @@ class Key(ExpressionBase):
 
     def is_not_null(self):
         return Expression(f"{self.path} is not None")
+
+    def is_true(self):
+        return Expression(f"{self.path} is True")
+
+    def is_false(self):
+        return Expression(f"{self.path} is False")
 
     def as_bool(self):
         return Expression(f"bool({self.path})")
