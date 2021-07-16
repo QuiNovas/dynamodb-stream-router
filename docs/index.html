@@ -1,0 +1,403 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Welcome to dynamodb-stream-router’s documentation! &mdash; dynamodb-stream-router 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home"> dynamodb-stream-router
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Welcome to dynamodb-stream-router’s documentation!</a></li>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#dynamodb-stream-router-package">dynamodb_stream_router package</a><ul>
+<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">dynamodb-stream-router</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Welcome to dynamodb-stream-router’s documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-dynamodb-stream-router-s-documentation">
+<h1>Welcome to dynamodb-stream-router’s documentation!<a class="headerlink" href="#welcome-to-dynamodb-stream-router-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="section" id="dynamodb-stream-router-package">
+<h1>dynamodb_stream_router package<a class="headerlink" href="#dynamodb-stream-router-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="dynamodb_stream_router.StreamRouter">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.</span></code><code class="sig-name descname"><span class="pre">StreamRouter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threaded</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.StreamRouter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="dynamodb_stream_router.StreamRouter.resolve_all">
+<code class="sig-name descname"><span class="pre">resolve_all</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.StreamRouter.resolve_all" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.StreamRouter.resolve_item">
+<code class="sig-name descname"><span class="pre">resolve_item</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#dynamodb_stream_router.StreamRouter.resolve_item" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.StreamRouter.route">
+<code class="sig-name descname"><span class="pre">route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.StreamRouter.route" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.StreamRouter.test_conditional_func">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">test_conditional_func</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#dynamodb_stream_router.StreamRouter.test_conditional_func" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.StreamRouter.threaded">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">threaded</span></code><a class="headerlink" href="#dynamodb_stream_router.StreamRouter.threaded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-dynamodb_stream_router.conditions"></span><dl class="py class">
+<dt id="dynamodb_stream_router.conditions.Expression">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">Expression</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Expression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.ExpressionBase" title="dynamodb_stream_router.conditions.ExpressionBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.ExpressionBase</span></code></a></p>
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Expression.evaluate">
+<code class="sig-name descname"><span class="pre">evaluate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Expression.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Expression.has_changed">
+<code class="sig-name descname"><span class="pre">has_changed</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Expression.has_changed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Expression.item">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">item</span></code><a class="headerlink" href="#dynamodb_stream_router.conditions.Expression.item" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynamodb_stream_router.conditions.ExpressionBase">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">ExpressionBase</span></code><a class="headerlink" href="#dynamodb_stream_router.conditions.ExpressionBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.ExpressionBase.quote_str">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">quote_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.ExpressionBase.quote_str" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynamodb_stream_router.conditions.Group">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">Group</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.ExpressionBase" title="dynamodb_stream_router.conditions.ExpressionBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.ExpressionBase</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynamodb_stream_router.conditions.HasChanged">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">HasChanged</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.HasChanged" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.Expression</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynamodb_stream_router.conditions.Key">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">Key</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.ExpressionBase" title="dynamodb_stream_router.conditions.ExpressionBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.ExpressionBase</span></code></a></p>
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.as_bool">
+<code class="sig-name descname"><span class="pre">as_bool</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.as_bool" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.begins_with">
+<code class="sig-name descname"><span class="pre">begins_with</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.begins_with" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.between">
+<code class="sig-name descname"><span class="pre">between</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.between" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.contains">
+<code class="sig-name descname"><span class="pre">contains</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.contains" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.ends_with">
+<code class="sig-name descname"><span class="pre">ends_with</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.ends_with" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.eq">
+<code class="sig-name descname"><span class="pre">eq</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.eq" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.exists">
+<code class="sig-name descname"><span class="pre">exists</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.exists" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.gt">
+<code class="sig-name descname"><span class="pre">gt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.gt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.gte">
+<code class="sig-name descname"><span class="pre">gte</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.gte" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.is_in">
+<code class="sig-name descname"><span class="pre">is_in</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_in" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.is_not_null">
+<code class="sig-name descname"><span class="pre">is_not_null</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_not_null" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.is_null">
+<code class="sig-name descname"><span class="pre">is_null</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_null" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.is_type">
+<code class="sig-name descname"><span class="pre">is_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.lt">
+<code class="sig-name descname"><span class="pre">lt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.lt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.lte">
+<code class="sig-name descname"><span class="pre">lte</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.lte" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.ne">
+<code class="sig-name descname"><span class="pre">ne</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.ne" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.not_contains">
+<code class="sig-name descname"><span class="pre">not_contains</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.not_contains" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.not_in">
+<code class="sig-name descname"><span class="pre">not_in</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.not_in" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynamodb_stream_router.conditions.New">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">New</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.New" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.Key" title="dynamodb_stream_router.conditions.Key"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.Key</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynamodb_stream_router.conditions.Old">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">Old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Old" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.Key" title="dynamodb_stream_router.conditions.Key"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.Key</span></code></a></p>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Mathew Moon &lt;mmoon@quinovas.com&gt;.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
