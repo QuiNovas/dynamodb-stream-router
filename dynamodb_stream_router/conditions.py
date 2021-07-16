@@ -1,12 +1,10 @@
 #!/usr/bin/env python3.8
+from decimal import Decimal
 
 
 class ExpressionBase:
     def __init__(self):
         self.exp = ""
-
-    def __eq__(self, other):
-        return f"{self} == {other}"
 
     def __and__(self, other):
         return Expression(f"{self.exp} and {other.exp}")
@@ -87,12 +85,42 @@ class HasChanged(Expression):
 
 
 class Key(ExpressionBase):
-    def __init__(self, image, key):
+
+    __known_types = (
+        list,
+        dict,
+        int,
+        float,
+        Decimal,
+        str,
+        bool
+    )
+
+    __known_types_str = ", ".join([
+        str(x) for x in __known_types
+    ])
+
+    def __init__(self, image=None, key=None, full_path=None):
         super().__init__()
+        if not (
+            full_path
+            or (image and key)
+        ):
+            raise AttributeError("Key() expects either full_path, or image and key")
+
         path_base = "self.item"
         self.base = path_base
-        self.path = f"""{path_base}[{self.quote_str(image)}][{self.quote_str(key)}]"""
+        if full_path:
+            self.path = full_path
+        else:
+            self.path = f"""{path_base}[{self.quote_str(image)}][{self.quote_str(key)}]"""
         self.exp = None
+
+    def __getitem__(self, index):
+        return Key(full_path=f"{self.path}[{self.quote_str(index)}]")
+
+    def get(self, name: str):
+        return Key(full_path=f"{self.path}.get({self.quote_str(name)})")
 
     def eq(self, val):
         return Expression(f"{self.path} == {self.quote_str(val)}")
@@ -146,7 +174,22 @@ class Key(ExpressionBase):
         return Expression(f"bool({self.path})")
 
     def is_type(self, type_name):
-        return Expression(f"isinstance({self.path, type_name})")
+
+        if type_name not in self.__known_types:
+            raise TypeError(f"Key.is_type() only supports the following types: {self.__known_types_str}")
+
+        type_name = type_name.__name__
+
+        return Expression(f"isinstance({self.path}, {type_name})")
+
+    def is_not_type(self, type_name):
+        if type_name not in self.__known_types:
+            raise TypeError(
+                f"Key.is_type() only supports the following types: {self.__known_types_str}")
+
+        type_name = type_name.__name__
+
+        return Expression(f"not isinstance({self.path}, {type_name})")
 
 
 class Old(Key):

@@ -56,6 +56,24 @@ class StreamRouter:
     def __init__(self, *args, **kwargs):
         self.routes = []
 
+    def update(
+        self,
+        **kwargs
+    ):
+        return self.route("UPDATE", **kwargs)
+
+    def remove(
+        self,
+        **kwargs
+    ):
+        return self.route("REMOVE", **kwargs)
+
+    def insert(
+        self,
+        **kwargs
+    ):
+        return self.route("INSERT", **kwargs)
+
     def route(
         self,
         operations: Union[str, List[str]],
