@@ -1,29 +1,79 @@
-.. dynamodb-stream-router documentation master file, created by
-   sphinx-quickstart on Mon Mar  1 14:28:23 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. dynamodb_stream_router documentation master file
 
-Welcome to dynamodb-stream-router's documentation!
-==================================================
+
+Home
+====
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: -1
 
-Introduction
-============
 
-dynamodb\_stream\_router package
-================================
+dynamodb_stream_router
+======================
 
-Module contents
----------------
-.. automodule:: dynamodb_stream_router.router
+router.StreamRouter
+-------------------
+
+.. autoclass:: dynamodb_stream_router.router.StreamRouter
    :members:
    :undoc-members:
-   :exclude-members: Operations, Image
    :show-inheritance:
 
-.. automodule:: dynamodb_stream_router.conditions
+
+router.Route
+------------
+
+.. autoclass:: dynamodb_stream_router.router.Route
    :members:
+   :undoc-members:
    :show-inheritance:
-   :exclude-members: ExpressionBase
+
+
+router.Result
+-------------
+
+.. autoclass:: dynamodb_stream_router.router.Result
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. autosummary::
+    :toctree: _autosummary
+    :caption: Conditions and Expressions
+
+
+dynamodb_stream_router.conditions module
+========================================
+
+conditions.New
+--------------
+
+.. autoclass:: dynamodb_stream_router.conditions.New
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+conditions.Old
+--------------
+
+.. autoclass:: dynamodb_stream_router.conditions.Old
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+conditions.HasChanged
+---------------------
+
+.. autoclass:: dynamodb_stream_router.conditions.HasChanged
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+conditions.Expression
+---------------------
+
+.. autoclass:: dynamodb_stream_router.conditions.Expression
+   :members:
+   :undoc-members:
+   :show-inheritance:

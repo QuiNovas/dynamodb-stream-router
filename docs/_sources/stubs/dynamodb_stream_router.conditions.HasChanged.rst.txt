@@ -1,0 +1,31 @@
+﻿dynamodb\_stream\_router.conditions.HasChanged
+==============================================
+
+.. currentmodule:: dynamodb_stream_router.conditions
+
+.. autoclass:: HasChanged
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~HasChanged.__init__
+      ~HasChanged.evaluate
+      ~HasChanged.invert
+      ~HasChanged.quote_str
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~HasChanged.record
+   
+   

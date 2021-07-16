@@ -31,7 +31,9 @@ release = '0.0.1'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx_rtd_theme"]
+extensions = ["sphinx.ext.autodoc", "sphinx_rtd_theme", "sphinx.ext.autosummary"]
+
+autosummary_generate = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -56,3 +58,4 @@ html_static_path = ["static"]
 
 html_css_files = ["custom.css"]
 autodoc_mock_imports = ["typeguard"]
+html_theme_options = {"collapse_navigation": False}
