@@ -12,19 +12,18 @@ Welcome to dynamodb-stream-router's documentation!
 Introduction
 ============
 
-
 dynamodb\_stream\_router package
 ================================
 
 Module contents
 ---------------
-
-.. autoclass:: dynamodb_stream_router.StreamRouter
+.. automodule:: dynamodb_stream_router.router
    :members:
    :undoc-members:
+   :exclude-members: Operations, Image
    :show-inheritance:
 
 .. automodule:: dynamodb_stream_router.conditions
    :members:
-   :undoc-members:
    :show-inheritance:
+   :exclude-members: ExpressionBase

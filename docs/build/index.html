@@ -88,7 +88,7 @@
 <li><a class="reference internal" href="#">Welcome to dynamodb-stream-router’s documentation!</a></li>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#dynamodb-stream-router-package">dynamodb_stream_router package</a><ul>
-<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+<li><a class="reference internal" href="#module-dynamodb_stream_router.router">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -168,189 +168,684 @@
 </div>
 <div class="section" id="dynamodb-stream-router-package">
 <h1>dynamodb_stream_router package<a class="headerlink" href="#dynamodb-stream-router-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-dynamodb_stream_router.router">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-dynamodb_stream_router.router" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="dynamodb_stream_router.StreamRouter">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.</span></code><code class="sig-name descname"><span class="pre">StreamRouter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threaded</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.StreamRouter" title="Permalink to this definition">¶</a></dt>
+<dt id="dynamodb_stream_router.router.Result">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">Result</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">route</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.Result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Result.record">
+<code class="sig-name descname"><span class="pre">record</span></code><em class="property"><span class="pre">:</span> <span class="pre">dict</span></em><a class="headerlink" href="#dynamodb_stream_router.router.Result.record" title="Permalink to this definition">¶</a></dt>
+<dd><p>The original stream record passed to the Route’s callable</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Result.route">
+<code class="sig-name descname"><span class="pre">route</span></code><em class="property"><span class="pre">:</span> <a class="reference internal" href="#dynamodb_stream_router.router.Route" title="dynamodb_stream_router.router.Route"><span class="pre">dynamodb_stream_router.router.Route</span></a></em><a class="headerlink" href="#dynamodb_stream_router.router.Result.route" title="Permalink to this definition">¶</a></dt>
+<dd><p>The complete <code class="docutils literal notranslate"><span class="pre">Route</span></code> object that generated this result</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Result.value">
+<code class="sig-name descname"><span class="pre">value</span></code><em class="property"><span class="pre">:</span> <span class="pre">Any</span></em><a class="headerlink" href="#dynamodb_stream_router.router.Result.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>The return value of the callable for the Route that was called</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynamodb_stream_router.router.Route">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">Route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.Route" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Route.callable">
+<code class="sig-name descname"><span class="pre">callable</span></code><em class="property"><span class="pre">:</span> <span class="pre">Callable</span></em><a class="headerlink" href="#dynamodb_stream_router.router.Route.callable" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Callable that will be triggered if this route is a match for a record</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Route.condition_expression">
+<code class="sig-name descname"><span class="pre">condition_expression</span></code><em class="property"><span class="pre">:</span> <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a></em><a class="headerlink" href="#dynamodb_stream_router.router.Route.condition_expression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional dynamodb_stream_router.Expression to decide whether this route should be called on a record</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Route.filter">
+<code class="sig-name descname"><span class="pre">filter</span></code><em class="property"><span class="pre">:</span> <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#dynamodb_stream_router.router.Route.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional list of truth Callables to decide whether this route should be called on a record</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Route.operations">
+<code class="sig-name descname"><span class="pre">operations</span></code><em class="property"><span class="pre">:</span> <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dynamodb_stream_router.router.Operations</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#dynamodb_stream_router.router.Route.operations" title="Permalink to this definition">¶</a></dt>
+<dd><p>The operations that this route is registered for (UPDATE | INSERT | DELETE)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynamodb_stream_router.router.StreamRouter">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">StreamRouter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threaded</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
-<dt id="dynamodb_stream_router.StreamRouter.resolve_all">
-<code class="sig-name descname"><span class="pre">resolve_all</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.StreamRouter.resolve_all" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="dynamodb_stream_router.router.StreamRouter.insert">
+<code class="sig-name descname"><span class="pre">insert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.insert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for StreamRouter.route. Creates a route for “INSERT” operation, taking the same arguments</p>
+</dd></dl>
 
 <dl class="py method">
-<dt id="dynamodb_stream_router.StreamRouter.resolve_item">
-<code class="sig-name descname"><span class="pre">resolve_item</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#dynamodb_stream_router.StreamRouter.resolve_item" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="dynamodb_stream_router.router.StreamRouter.remove">
+<code class="sig-name descname"><span class="pre">remove</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for StreamRouter.route. Creates a route for “REMOVE” operation, taking the same arguments</p>
+</dd></dl>
 
 <dl class="py method">
-<dt id="dynamodb_stream_router.StreamRouter.route">
-<code class="sig-name descname"><span class="pre">route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.StreamRouter.route" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="dynamodb_stream_router.router.StreamRouter.resolve_all">
+<code class="sig-name descname"><span class="pre">resolve_all</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">records</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.router.Result" title="dynamodb_stream_router.router.Result"><span class="pre">dynamodb_stream_router.router.Result</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.resolve_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates through each record in a batch and calls any matching resolvers on them, returning a
+list containing <code class="docutils literal notranslate"><span class="pre">Result</span></code> objects for any routes that were called on the records</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>records:</em> (<code class="docutils literal notranslate"><span class="pre">List[dict]</span></code>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">List[dynamodb_stream_router.Result]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt id="dynamodb_stream_router.StreamRouter.test_conditional_func">
-<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">test_conditional_func</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#dynamodb_stream_router.StreamRouter.test_conditional_func" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="dynamodb_stream_router.router.StreamRouter.resolve_record">
+<code class="sig-name descname"><span class="pre">resolve_record</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.router.Result" title="dynamodb_stream_router.router.Result"><span class="pre">dynamodb_stream_router.router.Result</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.resolve_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolves a single record, returning a list containing <code class="docutils literal notranslate"><span class="pre">Result</span></code> objects for any
+routes that were called on the record</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>record:</em> (<code class="docutils literal notranslate"><span class="pre">dict</span></code>): A single stream record</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">List[dynamodb_stream_router.Result]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
-<dt id="dynamodb_stream_router.StreamRouter.threaded">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">threaded</span></code><a class="headerlink" href="#dynamodb_stream_router.StreamRouter.threaded" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="dynamodb_stream_router.router.StreamRouter.route">
+<code class="sig-name descname"><span class="pre">route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.route" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used as a decorator to register a route. Accepts keyword arguments that determine under what conditions the route will
+be called. If no condition_expression or filter is provided then the route will be called for any operations that are
+passed. If both condition_expression and filter are passed the results of the both will be OR’d together to decide whether
+or not the route is called for a particular record</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>operations:</em> (<code class="docutils literal notranslate"><span class="pre">Union[str,</span> <span class="pre">List[str]</span></code>): A Dynamodb operation or list of operations. Can be one or
+more of ‘REMOVE | INSERT | UPDATE’</p></li>
+<li><p><em>condition_expression:</em> (<code class="docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.Expression</span></code>): An expression that returns a boolean indicating if
+the route should be called for a particular record</p></li>
+<li><p><em>filter:</em> (<code class="docutils literal notranslate"><span class="pre">Union[Callable,</span> <span class="pre">List[Callable]</span></code>): A Callable, or list of Callables that accept a stream record as their
+sole argument and return a boolean, indication if the route should be called for the record</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Callable</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.StreamRouter.routes">
+<code class="sig-name descname"><span class="pre">routes</span></code><em class="property"><span class="pre">:</span> <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.router.Route" title="dynamodb_stream_router.router.Route"><span class="pre">dynamodb_stream_router.router.Route</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.routes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of dynamodb_stream_router.Route that are registered to the router</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.router.StreamRouter.test_conditional_func">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">test_conditional_func</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.test_conditional_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accepts list of Callables that will be called with <code class="docutils literal notranslate"><span class="pre">record</span></code> passed as an argument. Callables
+should return a bool indicating whether or not a route should be called. If any Callable in the
+list returns True then True will be returned by the method, otherwise False</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>record:</em> (<code class="docutils literal notranslate"><span class="pre">dict</span></code>): A single stream record</p></li>
+<li><p><em>funcs:</em> (<code class="docutils literal notranslate"><span class="pre">dict</span></code>): A list of truthy Callables</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.router.StreamRouter.threaded">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">threaded</span></code><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.threaded" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, then each record will be handled in its own thread using ThreadPoolExecutor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Getter</dt>
+<dd class="field-odd"><p>Returns a boolean indicating if threading will be used</p>
+</dd>
+<dt class="field-even">Type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.router.StreamRouter.update">
+<code class="sig-name descname"><span class="pre">update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for StreamRouter.route. Creates a route for “UPDATE” operation, taking the same arguments</p>
+</dd></dl>
 
 </dd></dl>
 
 <span class="target" id="module-dynamodb_stream_router.conditions"></span><dl class="py class">
 <dt id="dynamodb_stream_router.conditions.Expression">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">Expression</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Expression" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.ExpressionBase" title="dynamodb_stream_router.conditions.ExpressionBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.ExpressionBase</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.ExpressionBase</span></code></p>
+<p>A chain of Key, Old, New, HasChanged objects that are formed to create a final expression that can be evaluated against a
+stream record. It doesn’t really make sense to create an object of this type directly. It is a byproduct of creating an
+expression of statements using the above mentioned classes. It’s main purpose is to facilitate the evaluation of those statements.</p>
+<p>An example expression:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dynamodb_stream_router.conditions</span> <span class="kn">import</span> <span class="n">Old</span><span class="p">,</span> <span class="n">New</span>
+
+<span class="n">exp</span> <span class="o">=</span> <span class="n">Old</span><span class="p">(</span><span class="s2">&quot;pk&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">&quot;foo&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">New</span><span class="p">(</span><span class="s2">&quot;count&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">exp</span><span class="o">.</span><span class="n">record</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;old&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;pk&quot;</span><span class="p">:</span> <span class="s2">&quot;foo&quot;</span><span class="p">},</span> <span class="s2">&quot;new&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}}</span>
+
+<span class="n">exp</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span>
+<span class="c1"># returns True</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Expression.evaluate">
-<code class="sig-name descname"><span class="pre">evaluate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Expression.evaluate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="dynamodb_stream_router.conditions.Expression.has_changed">
-<code class="sig-name descname"><span class="pre">has_changed</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Expression.has_changed" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="dynamodb_stream_router.conditions.Expression.item">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">item</span></code><a class="headerlink" href="#dynamodb_stream_router.conditions.Expression.item" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<code class="sig-name descname"><span class="pre">evaluate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Expression.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the stored expression, using <code class="docutils literal notranslate"><span class="pre">record</span></code> as the stream record to inspect. If record is not passed then self.record
+will be used. If record is None and self.record is not set an exception will be raised</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>record:</em> (<code class="docutils literal notranslate"><span class="pre">dict</span></code>): The stream record to inspect</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">bool</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="py class">
-<dt id="dynamodb_stream_router.conditions.ExpressionBase">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">ExpressionBase</span></code><a class="headerlink" href="#dynamodb_stream_router.conditions.ExpressionBase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
-<dt id="dynamodb_stream_router.conditions.ExpressionBase.quote_str">
-<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">quote_str</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.ExpressionBase.quote_str" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="dynamodb_stream_router.conditions.Expression.invert">
+<code class="sig-name descname"><span class="pre">invert</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Expression.invert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inverts the end result of an Expression</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Expression.record">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">record</span></code><a class="headerlink" href="#dynamodb_stream_router.conditions.Expression.record" title="Permalink to this definition">¶</a></dt>
+<dd><p>The stream record that will be inspected by the expression. This must be set before a call to
+Expression.evaluate()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">dict</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="dynamodb_stream_router.conditions.Group">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">Group</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Group" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.ExpressionBase" title="dynamodb_stream_router.conditions.ExpressionBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.ExpressionBase</span></code></a></p>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">Group</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.ExpressionBase</span></code></p>
+<p>Used to group statements (New, Old, Key, HasChanged) together and set precedence.
+Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dynamodb_stream_router</span> <span class="kn">import</span> <span class="n">Group</span><span class="p">,</span> <span class="n">New</span><span class="p">,</span> <span class="n">Old</span><span class="p">,</span> <span class="n">HasChannged</span>
+
+<span class="n">exp</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">New</span><span class="p">(</span><span class="s2">&quot;sk&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="s2">&quot;foo&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">Old</span><span class="p">(</span><span class="s2">&quot;sk&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">ne</span><span class="p">(</span><span class="s2">&quot;bar&quot;</span><span class="p">))</span> <span class="o">|</span> <span class="n">HasChanged</span><span class="p">([</span><span class="s2">&quot;baz&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>In simple terms, Group provides the same functionality of grouping statements using ‘()’ in python</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>exp:</em> (<code class="docutils literal notranslate"><span class="pre">dynamodb_stream_router.condition.Expression</span></code>): The Expression (normally a group of Key/New/Old/HasChanged) to group</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
 <dt id="dynamodb_stream_router.conditions.HasChanged">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">HasChanged</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.HasChanged" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">HasChanged</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.HasChanged" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.Expression</span></code></a></p>
+<p>Iterates through a string or a list of strings, representing dictionary keys, to test if that particular key exists
+in, and differs between, the old and new images. The first time a change is detected the method will return True. If
+no matches are found by the last iteration then the method will return False. This is a wrapper around Expression.__has_changed()
+and is the intended way to use it. When evaluated it will return a boolean if any of the values at <code class="docutils literal notranslate"><span class="pre">keys</span></code> has changed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>keys:</em> (<code class="docutils literal notranslate"><span class="pre">List[str]</span></code>): A list of keys to test for change</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
 <dt id="dynamodb_stream_router.conditions.Key">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">Key</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.ExpressionBase" title="dynamodb_stream_router.conditions.ExpressionBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.ExpressionBase</span></code></a></p>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">Key</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.ExpressionBase</span></code></p>
+<p>Provides methods intended to be used with New() and Old() for building an Expression. While this can be accessed directly,
+it is recommended to use New and Old, which inherit all of Key’s methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>image:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): The image to inspect. Can be old | new</p></li>
+<li><p><em>key:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): The key inside of the image to operate on</p></li>
+<li><p><em>full_path:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): If provided self.exp will be overwritten with this value</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.as_bool">
-<code class="sig-name descname"><span class="pre">as_bool</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.as_bool" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">as_bool</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.as_bool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Casts the current item to a bool when evaluated. Equivalent to
+python’s <code class="docutils literal notranslate"><span class="pre">bool(foo)</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.begins_with">
-<code class="sig-name descname"><span class="pre">begins_with</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.begins_with" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">begins_with</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.begins_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item begins with <code class="docutils literal notranslate"><span class="pre">val</span></code> when evaluated. Equivalent to python’s
+<code class="docutils literal notranslate"><span class="pre">&quot;foo&quot;.startswith(&quot;bar&quot;)</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): The value to test current item against</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.between">
-<code class="sig-name descname"><span class="pre">between</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.between" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">between</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.between" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item is greater than <code class="docutils literal notranslate"><span class="pre">start</span></code> and less than <code class="docutils literal notranslate"><span class="pre">end</span></code> when evaluated.
+Equivalent to python’s <code class="docutils literal notranslate"><span class="pre">start</span> <span class="pre">&lt;</span> <span class="pre">foo</span> <span class="pre">&lt;</span> <span class="pre">bar</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>start:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to test current item is greater than</p></li>
+<li><p><em>end:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to test current item is greater than</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.contains">
-<code class="sig-name descname"><span class="pre">contains</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.contains" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">contains</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item contains <code class="docutils literal notranslate"><span class="pre">val</span></code> when evaluated. Equivalent
+to python’s <code class="docutils literal notranslate"><span class="pre">val</span> <span class="pre">in</span> <span class="pre">foo</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to test if in current item</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.ends_with">
-<code class="sig-name descname"><span class="pre">ends_with</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.ends_with" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">ends_with</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.ends_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item ends with <code class="docutils literal notranslate"><span class="pre">val</span></code> when evaluated. Equivalent to python’s
+<code class="docutils literal notranslate"><span class="pre">&quot;foo&quot;.endswith(&quot;bar&quot;)</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): The value to test current item against</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.eq">
-<code class="sig-name descname"><span class="pre">eq</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.eq" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">eq</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.eq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the equality of the current item and <code class="docutils literal notranslate"><span class="pre">val</span></code> when evaluated</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to compare the current item to</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.exists">
-<code class="sig-name descname"><span class="pre">exists</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.exists" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">exists</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the specified key/index exists in the current item when evaluated</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">Union[str,</span> <span class="pre">int]</span></code>): The value to test current item against</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.get">
+<code class="sig-name descname"><span class="pre">get</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the value at the specified key when evaluated. Mimics <code class="docutils literal notranslate"><span class="pre">dict.get()</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>key:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): The key of the current item to return</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.gt">
-<code class="sig-name descname"><span class="pre">gt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.gt" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">gt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.gt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item is greater than <code class="docutils literal notranslate"><span class="pre">val</span></code> when evaluated. Equivalent
+to python’s <code class="docutils literal notranslate"><span class="pre">foo</span> <span class="pre">&gt;</span> <span class="pre">bar</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to test current item against</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.gte">
-<code class="sig-name descname"><span class="pre">gte</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.gte" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">gte</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.gte" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item is greater than or equal to <code class="docutils literal notranslate"><span class="pre">val</span></code> when evaluated.
+Equivalent to python’s <code class="docutils literal notranslate"><span class="pre">foo</span> <span class="pre">&gt;=</span> <span class="pre">bar</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to test current item against</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.is_false">
+<code class="sig-name descname"><span class="pre">is_false</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_false" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item is False when evaluated. Equivalent to
+python’s <code class="docutils literal notranslate"><span class="pre">foo</span> <span class="pre">is</span> <span class="pre">False</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.is_in">
-<code class="sig-name descname"><span class="pre">is_in</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_in" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">is_in</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if <code class="docutils literal notranslate"><span class="pre">val</span></code> contains the current item when evaluated. Equivalent
+to python’s <code class="docutils literal notranslate"><span class="pre">val</span> <span class="pre">in</span> <span class="pre">foo</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to test current item is in</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.is_not_null">
-<code class="sig-name descname"><span class="pre">is_not_null</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_not_null" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">is_not_null</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_not_null" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item is not None when evaluated. Equivalent to
+python’s <code class="docutils literal notranslate"><span class="pre">foo</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">None</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.is_not_type">
+<code class="sig-name descname"><span class="pre">is_not_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_not_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns boolena indicating if the current item is not of type <code class="docutils literal notranslate"><span class="pre">obj_type</span></code> when evaluated.
+Equivalent to python’s <code class="docutils literal notranslate"><span class="pre">not</span> <span class="pre">isinstance(foo,</span> <span class="pre">SomeType)</span></code>. Supported types are:
+* list
+* dict
+* int
+* float
+* Decimal
+* str
+* bool</p>
+<p>Testing any other type will cause an exception to be raised</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>obj_type:</em> (<code class="docutils literal notranslate"><span class="pre">type</span></code>): The type to test current item against</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.is_null">
-<code class="sig-name descname"><span class="pre">is_null</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_null" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">is_null</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_null" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item is None when evaluated. Equivalent to
+python’s <code class="docutils literal notranslate"><span class="pre">foo</span> <span class="pre">is</span> <span class="pre">None</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.conditions.Key.is_true">
+<code class="sig-name descname"><span class="pre">is_true</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_true" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item is True when evaluated. Equivalent to
+python’s <code class="docutils literal notranslate"><span class="pre">foo</span> <span class="pre">is</span> <span class="pre">True</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.is_type">
-<code class="sig-name descname"><span class="pre">is_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_type" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">is_type</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.is_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns boolena indicating if the current item is of type <code class="docutils literal notranslate"><span class="pre">obj_type</span></code> when evaluated.
+Equivalent to python’s <code class="docutils literal notranslate"><span class="pre">isinstance(foo,</span> <span class="pre">SomeType)</span></code>. Supported types are:
+* list
+* dict
+* int
+* float
+* Decimal
+* str
+* bool</p>
+<p>Testing any other type will cause an exception to be raised</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>obj_type:</em> (<code class="docutils literal notranslate"><span class="pre">type</span></code>): The type to test current item against</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.lt">
-<code class="sig-name descname"><span class="pre">lt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.lt" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">lt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.lt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item is less than <code class="docutils literal notranslate"><span class="pre">val</span></code> when evaluated. Equivalent
+to python’s <code class="docutils literal notranslate"><span class="pre">foo</span> <span class="pre">&lt;</span> <span class="pre">bar</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to test current item against</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.lte">
-<code class="sig-name descname"><span class="pre">lte</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.lte" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">lte</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.lte" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item is less than or equal to <code class="docutils literal notranslate"><span class="pre">val</span></code> when evaluated.
+Equivalent to python’s <code class="docutils literal notranslate"><span class="pre">foo</span> <span class="pre">&lt;=</span> <span class="pre">bar</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to test current item against</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.ne">
-<code class="sig-name descname"><span class="pre">ne</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.ne" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">ne</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.ne" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the non equality of the current item and <code class="docutils literal notranslate"><span class="pre">val</span></code> when evaluated</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to compare the current item to</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.not_contains">
-<code class="sig-name descname"><span class="pre">not_contains</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.not_contains" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">not_contains</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.not_contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if the current item does not contain <code class="docutils literal notranslate"><span class="pre">val</span></code> when evaluated. Equivalent
+to python’s <code class="docutils literal notranslate"><span class="pre">val</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">foo</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to test if in current item</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.Key.not_in">
-<code class="sig-name descname"><span class="pre">not_in</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.not_in" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="sig-name descname"><span class="pre">not_in</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#dynamodb_stream_router.conditions.Expression" title="dynamodb_stream_router.conditions.Expression"><span class="pre">dynamodb_stream_router.conditions.Expression</span></a><a class="headerlink" href="#dynamodb_stream_router.conditions.Key.not_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a bool indicating if <code class="docutils literal notranslate"><span class="pre">val</span></code> does not contain the current item when evaluated. Equivalent
+to python’s <code class="docutils literal notranslate"><span class="pre">val</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">foo</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>val:</em> (<code class="docutils literal notranslate"><span class="pre">Any</span></code>): The value to test current item is in</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Expression</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt id="dynamodb_stream_router.conditions.New">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">New</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.New" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">New</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.New" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.Key" title="dynamodb_stream_router.conditions.Key"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.Key</span></code></a></p>
+<p>Creates an Expression that evaluates against the new image of a record. Expressions can be grouped together
+using the Group class and be and’d and or’d together using ‘&amp;’ and ‘|’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>key:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): The key in the old new to inspect</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
 <dt id="dynamodb_stream_router.conditions.Old">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">Old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Old" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.conditions.</span></code><code class="sig-name descname"><span class="pre">Old</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.conditions.Old" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dynamodb_stream_router.conditions.Key" title="dynamodb_stream_router.conditions.Key"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynamodb_stream_router.conditions.Key</span></code></a></p>
+<p>Creates an Expression that evaluates against the old image of a record. Expressions can be grouped together
+using the Group class and be and’d and or’d together using ‘&amp;’ and ‘|’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>key:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): The key in the old image to inspect</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
