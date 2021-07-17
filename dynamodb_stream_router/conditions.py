@@ -5,6 +5,7 @@ from typing import (
     List,
     Union
 )
+from .router import Record
 
 
 class ExpressionBase:
@@ -53,7 +54,11 @@ class Expression(ExpressionBase):
         from dynamodb_stream_router.conditions import Old, New
 
         exp = Old("pk").eq("foo") & New("count").lt(10)
-        exp.record = {"old": {"pk": "foo"}, "new": {"count": 5}}
+        exp.record = {
+            "StreamViewType": "OLD_AND_NEW_IMAGES",
+            "OldImage": {"pk": "foo"},
+            "NewImage": {"count": 5}}
+        }
 
         exp.evaluate()
         # returns True
@@ -89,24 +94,17 @@ class Expression(ExpressionBase):
         return self.__record
 
     @record.setter
-    def record(self, record: dict) -> dict:
-        if not isinstance(record, dict):
-            raise TypeError("Expression.record must be a dict")
-        record["new"] = record.get("new") or {}
-        record["old"] = record.get("old") or {}
+    def record(self, record: Union[dict, Record]) -> dict:
+        if not isinstance(record, (dict, Record)):
+            raise TypeError("Expression.record must be a dict or instance of dynamodb_stream_router.Record")
+
+        if isinstance(record, dict):
+            try:
+                record = Record(**record)
+            except TypeError:
+                raise TypeError("Invalid stream record")
+
         self.__record = record
-
-    def __has_changed(self, key: Union[str, List[str]]) -> str:
-        if isinstance(key, list):
-            exps = [
-                self.__has_changed(x) for x in key
-            ]
-            op = " or "
-            self.exp = op.join(exps)
-
-        else:
-            key = self.quote_str(key)
-            return f"""self.record["old"].get({key}) != self.record["new"].get({key})"""
 
     def evaluate(self, record: dict = None) -> bool:
         """
@@ -165,9 +163,23 @@ class HasChanged(Expression):
     :returns:
         ``Expression``
     """
-    def __init__(self, keys: List[str]):
-        super().__init__("")
-        self = Expression(self.__has_changed(keys))
+    def __new__(cls, keys: List[str]):
+        return Expression(cls.__has_changed(keys))
+
+    @classmethod
+    def __has_changed(cls, key: Union[str, List[str]]) -> str:
+        if isinstance(key, list):
+            exps = [
+                cls.__has_changed(x) for x in key
+            ]
+            op = " or "
+            exp = op.join(exps)
+
+        else:
+            key = ExpressionBase.quote_str(key)
+            exp = f"""self.record.OldImage.get({key}) != self.record.NewImage.get({key})"""
+
+        return exp
 
 
 class Key(ExpressionBase):
@@ -525,7 +537,8 @@ class Old(Key):
         * *key:* (``str``): The key in the old image to inspect
     """
     def __init__(self, key: str):
-        super().__init__("old", key)
+        full_path = f"""self.record.OldImage["{key}"]"""
+        super().__init__(full_path=full_path)
 
 
 class New(Key):
@@ -534,7 +547,8 @@ class New(Key):
     using the Group class and be and'd and or'd together using '&' and '|'
 
     :Arguments:
-        * *key:* (``str``): The key in the old new to inspect
+        * *key:* (``str``): The key in the new image to inspect
     """
     def __init__(self, key: str):
-        super().__init__("new", key)
+        full_path = f"""self.record.NewImage["{key}"]"""
+        super().__init__(full_path=full_path)

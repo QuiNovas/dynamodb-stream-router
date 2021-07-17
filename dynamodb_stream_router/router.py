@@ -7,21 +7,28 @@ from enum import (
     auto
 )
 from typing import (
+    TYPE_CHECKING,
     Callable,
     List,
     NamedTuple,
     Union,
     Any
 )
-from .conditions import Expression
+from uuid import uuid4
+
+if TYPE_CHECKING:
+    from .conditions import Expression
+else:
+    Expression = object
+
 
 if not environ.get("TYPECHECKED"):
     typeguard.typechecked = lambda: True
 
 
 class Image(Enum):
-    old = auto()
-    new = auto()
+    OldImage = auto()
+    NewImage = auto()
 
 
 class Operations(Enum):
@@ -30,7 +37,12 @@ class Operations(Enum):
     UPDATE = auto()
 
 
+class StreamViewType(Enum):
+    NEW_AND_OLD_IMAGES = auto()
+
+
 class Route(NamedTuple):
+
     #: The Callable that will be triggered if this route is a match for a record
     callable: Callable
     #: The operations that this route is registered for (UPDATE | INSERT | DELETE)
@@ -39,6 +51,42 @@ class Route(NamedTuple):
     condition_expression: Expression = None
     #: Optional list of truth Callables to decide whether this route should be called on a record
     filter: Union[Callable, List[Callable]] = []
+
+
+class RecordBase(NamedTuple):
+    eventName: Operations
+    StreamViewType: StreamViewType
+    awsRegion: str = ""
+    eventID: str = str(uuid4())
+    eventSource: str = "aws:dynamodb"
+    eventSourceARN: str = ""
+    eventVersion: str = ""
+    Keys: dict = None
+    NewImage: dict = {}
+    OldImage: dict = {}
+    SequenceNumber: str = str(uuid4())
+    SizeBytes: int = 0
+
+
+class Record(RecordBase):
+
+    def __new__(cls, **kwargs):
+        if "dynamodb" in kwargs:
+            for k in [
+                "NewImage",
+                "OldImage",
+                "StreamViewType",
+                "SequenceNumber",
+                "SizeBytes"
+            ]:
+
+                if k in kwargs["dynamodb"]:
+                    kwargs[k] = kwargs["dynamodb"][k]
+            del kwargs["dynamodb"]
+
+        kwargs["eventName"] = Operations[kwargs.get("eventName")]
+
+        return super().__new__(cls, **kwargs)
 
 
 class Result(NamedTuple):
@@ -184,13 +232,9 @@ class StreamRouter:
         :returns:
             ``List[dynamodb_stream_router.Result]``
         """
-        self.records = records
-
-        for i, record in enumerate(self.records):
-            self.records[i]["routes"] = [
-                x for x in self.routes
-                if record["operation"] in x.operations
-            ]
+        self.records = [
+            Record(**record) for record in records
+        ]
 
         if self.threaded:
             res = self.__executor.map(self.resolve_record, self.records)
@@ -203,7 +247,7 @@ class StreamRouter:
 
         return results
 
-    def resolve_record(self, record: dict) -> List[Result]:
+    def resolve_record(self, record: Record) -> List[Result]:
         """
         Resolves a single record, returning a list containing ``Result`` objects for any
         routes that were called on the record
@@ -214,7 +258,12 @@ class StreamRouter:
         :returns:
             ``List[dynamodb_stream_router.Result]``
         """
-        routes = record["routes"]
+
+        routes = [
+            x for x in self.routes
+            if record.eventName.name in x.operations
+        ]
+
         routes_to_call = []
         for route in routes:
             if (
