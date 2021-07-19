@@ -82,6 +82,61 @@ class Expression(ExpressionBase):
 
         return eval(str(self))
 
+    def _is_type(self, type_str):
+        print("CALLED _is_type()")
+        self.type_map = {
+            "S": "lambda x: isinstance(x, str)",
+            "L": lambda x: self.is_l(x),
+            "SS": lambda x: self.is_ss(x),
+            "NS": lambda x: self.is_ns(x),
+            "M": lambda x: isinstance(x, dict),
+            "B": lambda x: isinstance(x, bytes),
+            "NULL": lambda x: x is None,
+            "BOOL": lambda x: isinstance(x, bool)
+        }
+
+        if type_str not in self.type_map:
+            raise TypeError(f"Unknown Dynamodb type '{type_str}'")
+
+        print(self.type_map[type_str])
+        return Expression(self.type_map[type_str])
+
+    def is_bytes(self, val):
+        return isinstance(val, bytes)
+
+    def is_ss(self, val):
+        return isinstance(val, list) and [
+            x for x in val if isinstance(val, str)
+        ]
+
+    def is_ns(self, val):
+        return isinstance(val, list) and [
+            x for x in val if isinstance(val, (int, float))
+        ]
+
+    def is_l(self, val):
+        if not isinstance(val, list):
+            return False
+
+        first_type = type(val)
+        for x in val[1:]:
+            if type(x) != first_type:
+                return False
+
+        return True
+
+    def is_bool(self, val):
+        return type(val, bool)
+
+    def is_null(self, val):
+        return val is None
+
+    def is_str(self, val):
+        return isinstance(val, str)
+
+    def is_m(self, val):
+        return isinstance(val, dict)
+
     @property
     def record(self) -> dict:
         """
@@ -182,6 +237,36 @@ class HasChanged(Expression):
         return exp
 
 
+class IsType(Expression):
+    __path = None
+
+    def __new__(cls, path: Expression, type_str: str):
+        cls.__path = str(path)
+        cls.type_map = {
+            "S": f"isinstance({cls.__path}, str)",
+            "L": f"self.is_l({cls.__path})",
+            "SS": f"self.is_ss({cls.__path})",
+            "NS": f"self.is_ns({cls.__path})",
+            "M": f"isinstance({cls.__path}, dict)",
+            "B": f"isinstance({cls.__path}, bytes)",
+            "NULL": f"{cls.__path} is None",
+            "BOOL": f"isinstance({cls.__path}, bool)"
+        }
+
+        return Expression(cls.__is_type(type_str))
+
+    @classmethod
+    def __is_type(cls, type_str):
+        print("CALLED _is_type()")
+
+        if type_str not in cls.type_map:
+            raise TypeError(f"Unknown Dynamodb type '{type_str}'")
+
+        func = cls.type_map[type_str]
+        print(func)
+        return func
+
+
 class Key(ExpressionBase):
     """
     Provides methods intended to be used with New() and Old() for building an Expression. While this can be accessed directly,
@@ -227,6 +312,28 @@ class Key(ExpressionBase):
         else:
             self.path = f"""{path_base}[{self.quote_str(image)}][{self.quote_str(key)}]"""
         self.exp = None
+
+    def _is_type(self, type_str):
+        print("CALLED _is_type()")
+        self.type_map = {
+            "S": "lambda x: isinstance(x, str)",
+            "L": lambda x: self.is_l(x),
+            "SS": lambda x: self.is_ss(x),
+            "NS": lambda x: self.is_ns(x),
+            "M": lambda x: isinstance(x, dict),
+            "B": lambda x: isinstance(x, bytes),
+            "NULL": lambda x: x is None,
+            "BOOL": lambda x: isinstance(x, bool)
+        }
+
+        if type_str not in self.type_map:
+            raise TypeError(f"Unknown Dynamodb type '{type_str}'")
+
+        print(self.type_map[type_str])
+        return Expression(f"{self.type_map[type_str]}({self.path})")
+
+    def is_type(self, type_name):
+        return self._is_type(type_name)
 
     def __getitem__(self, index):
         return Key(full_path=f"{self.path}[{self.quote_str(index)}]")
@@ -426,15 +533,15 @@ class Key(ExpressionBase):
         """
         return Expression(f"{self.quote_str(key)} in {self.base}")
 
+    """
     def is_null(self) -> Expression:
-        """
         Returns a bool indicating if the current item is None when evaluated. Equivalent to
         python's ``foo is None``
 
         :returns:
             ``Expression``
-        """
         return Expression(f"{self.path} is None")
+    """
 
     def is_not_null(self) -> Expression:
         """
@@ -476,8 +583,8 @@ class Key(ExpressionBase):
         """
         return Expression(f"bool({self.path})")
 
+    """
     def is_type(self, obj_type: type) -> Expression:
-        """
         Returns boolena indicating if the current item is of type ``obj_type`` when evaluated.
         Equivalent to python's ``isinstance(foo, SomeType)``. Supported types are:
         * list
@@ -492,7 +599,6 @@ class Key(ExpressionBase):
 
         :Arguments:
             * *obj_type:* (``type``): The type to test current item against
-        """
 
         if obj_type not in self.__known_types:
             raise TypeError(f"Key.is_type() only supports the following types: {self.__known_types_str}")
@@ -500,6 +606,7 @@ class Key(ExpressionBase):
         type_name = obj_type.__name__
 
         return Expression(f"isinstance({self.path}, {type_name})")
+    """
 
     def is_not_type(self, obj_type: type) -> Expression:
         """
@@ -540,6 +647,9 @@ class Old(Key):
         full_path = f"""self.record.OldImage["{key}"]"""
         super().__init__(full_path=full_path)
 
+    def __str__(self):
+        return self.path
+
 
 class New(Key):
     """
@@ -552,3 +662,6 @@ class New(Key):
     def __init__(self, key: str):
         full_path = f"""self.record.NewImage["{key}"]"""
         super().__init__(full_path=full_path)
+
+    def __str__(self):
+        return self.path

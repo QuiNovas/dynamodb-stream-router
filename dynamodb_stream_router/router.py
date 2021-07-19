@@ -81,10 +81,18 @@ class Record(RecordBase):
             ]:
 
                 if k in kwargs["dynamodb"]:
-                    kwargs[k] = kwargs["dynamodb"][k]
+
+                    if k in ("OldImage", "NewImage"):
+                        kwargs[k] = parse_image(kwargs["dynamodb"][k])
+                    else:
+                        kwargs[k] = kwargs["dynamodb"][k]
+
             del kwargs["dynamodb"]
 
-        kwargs["eventName"] = Operations[kwargs.get("eventName")]
+        try:
+            kwargs["eventName"] = Operations[kwargs.get("eventName")].name
+        except KeyError:
+            raise TypeError(f"Unknown eventName {kwargs['eventName']}'")
 
         return super().__new__(cls, **kwargs)
 
@@ -129,6 +137,7 @@ class StreamRouter:
 
         #: A list of dynamodb_stream_router.Route that are registered to the router
         self.routes: List[Route] = []
+        self.format_record = True
 
     def update(
         self,
@@ -261,7 +270,7 @@ class StreamRouter:
 
         routes = [
             x for x in self.routes
-            if record.eventName.name in x.operations
+            if record.eventName in x.operations
         ]
 
         routes_to_call = []
@@ -304,3 +313,54 @@ class StreamRouter:
                 return True
 
         return False
+
+
+def parse_image(image: dict):
+    if isinstance(image, dict):
+        is_single = True
+        items = [image]
+    else:
+        items = image
+        is_single = False
+
+    def parseList(dynamoList):
+        i = 0
+        for d in dynamoList:
+            dynamoType = list(d.keys())[0]
+            dynamoList[i] = typeMap[dynamoType](d[dynamoType])
+            i += 1
+        return dynamoList
+
+    def parseMap(dynamoMap):
+        for d in dynamoMap:
+            dynamoType = list(dynamoMap[d].keys())[0]
+            dynamoMap[d] = typeMap[dynamoType](dynamoMap[d][dynamoType])
+        return dynamoMap
+
+    typeMap = {
+        'S': lambda x: x,
+        'N': lambda x: x,
+        'L': parseList,
+        'B': lambda x: bytes(x.encode()),
+        'BS': parseList,
+        'BOOL': lambda x: x,
+        'NS': parseList,
+        'NULL': lambda x: None,
+        'SS': list,
+        'M': parseMap
+    }
+
+    i = 0
+    for item in items:
+        newItem = {}
+        for attributeName in item.keys():
+            dynamoType = next(iter(item[attributeName]))
+            val = typeMap[dynamoType](item[attributeName][dynamoType])
+            newItem[attributeName] = val
+        items[i] = newItem
+        i += 1
+
+    if is_single:
+        items = items[0]
+
+    return items
