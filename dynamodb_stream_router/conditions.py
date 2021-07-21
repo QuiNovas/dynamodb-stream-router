@@ -94,7 +94,7 @@ class Expression:
         Returns a value wrapped if double quotes if it is a string, otherwise returns the original value
 
         :Keyword Arguments:
-            * *val:* (``Any`): The value to process
+            * *val:* (``Any``): The value to process
 
         :returns: ``Any``
         """
