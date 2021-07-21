@@ -2,10 +2,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import typeguard
 from os import environ
-from enum import (
-    Enum,
-    auto
-)
+from enum import Enum, auto
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -69,7 +66,6 @@ class RecordBase(NamedTuple):
 
 
 class StreamRecord(RecordBase):
-
     def __new__(cls, record) -> RecordBase:
         if "dynamodb" in record:
             for k in [
@@ -77,7 +73,7 @@ class StreamRecord(RecordBase):
                 "OldImage",
                 "StreamViewType",
                 "SequenceNumber",
-                "SizeBytes"
+                "SizeBytes",
             ]:
 
                 if k in record["dynamodb"]:
@@ -117,15 +113,11 @@ class StreamRouter:
     __threaded = False
     __executor = None
 
-    def __new__(
-        cls,
-        *args,
-        threads: int = None,
-        threaded: bool = False,
-        **kwargs
-    ):
+    def __new__(cls, *args, threads: int = None, threaded: bool = False, **kwargs):
         if not threaded and threads is not None:
-            raise AttributeError("Argument 'threads' doesn't make sense if 'threaded=False'")
+            raise AttributeError(
+                "Argument 'threads' doesn't make sense if 'threaded=False'"
+            )
 
         if threads == 0:
             raise AttributeError("Number of threads must be > 0")
@@ -152,35 +144,22 @@ class StreamRouter:
         """
 
         #: A list of dynamodb_stream_router.Route that are registered to the router
-        self.routes: RouteSet = RouteSet(**{
-            "REMOVE": [],
-            "INSERT": [],
-            "UPDATE": []
-        })
+        self.routes: RouteSet = RouteSet(**{"REMOVE": [], "INSERT": [], "UPDATE": []})
         self.format_record = True
 
-    def update(
-        self,
-        **kwargs
-    ) -> Callable:
+    def update(self, **kwargs) -> Callable:
         """
         Wrapper for StreamRouter.route. Creates a route for "UPDATE" operation, taking the same arguments
         """
         return self.route("UPDATE", **kwargs)
 
-    def remove(
-        self,
-        **kwargs
-    ) -> Callable:
+    def remove(self, **kwargs) -> Callable:
         """
         Wrapper for StreamRouter.route. Creates a route for "REMOVE" operation, taking the same arguments
         """
         return self.route("REMOVE", **kwargs)
 
-    def insert(
-        self,
-        **kwargs
-    ) -> Callable:
+    def insert(self, **kwargs) -> Callable:
         """
         Wrapper for StreamRouter.route. Creates a route for "INSERT" operation, taking the same arguments
         """
@@ -190,7 +169,7 @@ class StreamRouter:
         self,
         operations: Union[str, List[str]],
         condition_expression: Expression = None,
-        filter: Union[Callable, List[Callable]] = []
+        filter: Union[Callable, List[Callable]] = [],
     ) -> Callable:
 
         """
@@ -220,14 +199,16 @@ class StreamRouter:
 
         for op in operations:
             if op not in known_operations:
-                raise TypeError("Supported operations are 'REMOVE', 'INSERT', and 'UPDATE'")
+                raise TypeError(
+                    "Supported operations are 'REMOVE', 'INSERT', and 'UPDATE'"
+                )
 
         def inner(func: Callable) -> Callable:
             route = Route(
                 operations=operations,
                 callable=func,
                 filter=filter,
-                condition_expression=condition_expression
+                condition_expression=condition_expression,
             )
 
             for x in route.operations:
@@ -322,10 +303,7 @@ class StreamRouter:
             rf = route.filter
             if (
                 not (ce or rf)
-                or (
-                    ce is not None
-                    and ce(record)
-                )
+                or (ce is not None and ce(record))
                 or self.test_conditional_func(record, rf)
             ):
                 routes_to_call.append(route)
@@ -335,11 +313,7 @@ class StreamRouter:
         return map(self.__execute_route_callable, routes_to_call, record_args)
 
     def __execute_route_callable(self, route, record):
-        return Result(
-            route=route,
-            record=record,
-            value=route.callable(record)
-        )
+        return Result(route=route, record=record, value=route.callable(record))
 
     @staticmethod
     def test_conditional_func(record: dict, funcs: List[Callable]) -> bool:
@@ -385,16 +359,16 @@ def parse_image(image: dict):
         return dynamoMap
 
     typeMap = {
-        'S': lambda x: x,
-        'N': lambda x: x,
-        'L': parseList,
-        'B': lambda x: bytes(x.encode()),
-        'BS': parseList,
-        'BOOL': lambda x: x,
-        'NS': parseList,
-        'NULL': lambda x: None,
-        'SS': parseList,
-        'M': parseMap
+        "S": lambda x: x,
+        "N": lambda x: x,
+        "L": parseList,
+        "B": lambda x: bytes(x.encode()),
+        "BS": parseList,
+        "BOOL": lambda x: x,
+        "NS": parseList,
+        "NULL": lambda x: None,
+        "SS": parseList,
+        "M": parseMap,
     }
 
     i = 0

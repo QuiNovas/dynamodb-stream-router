@@ -111,14 +111,14 @@ class Expression:
         old_keys = list(self.record.OldImage.keys())
         new_keys = list(self.record.NewImage.keys())
 
-        return bool([
-            k for k in keys
-            if (
-                k in old_keys
-                and k in new_keys
-            )
-            and self.record.NewImage[k] != self.record.OldImage[k]
-        ])
+        return bool(
+            [
+                k
+                for k in keys
+                if (k in old_keys and k in new_keys)
+                and self.record.NewImage[k] != self.record.OldImage[k]
+            ]
+        )
 
     def _is_type(self, type_str):
         self.type_map = {
@@ -129,7 +129,7 @@ class Expression:
             "M": lambda x: isinstance(x, dict),
             "B": lambda x: isinstance(x, bytes),
             "NULL": lambda x: x is None,
-            "BOOL": lambda x: isinstance(x, bool)
+            "BOOL": lambda x: isinstance(x, bool),
         }
 
         if type_str not in self.type_map:
@@ -141,9 +141,7 @@ class Expression:
         return isinstance(val, bytes)
 
     def is_ss(self, val):
-        return isinstance(val, list) and [
-            x for x in val if isinstance(val, str)
-        ]
+        return isinstance(val, list) and [x for x in val if isinstance(val, str)]
 
     def is_ns(self, val):
         return isinstance(val, list) and [
@@ -303,7 +301,9 @@ class Expression:
             ``Expression``
         """
 
-        return Expression(f"{self.quote_str(start)} < {self.path} < {self.quote_str(end)}")
+        return Expression(
+            f"{self.quote_str(start)} < {self.path} < {self.quote_str(end)}"
+        )
 
     def begins_with(self, val: str) -> Expression:
         """
@@ -434,6 +434,7 @@ class Group(Expression):
     :Arguments:
         * *exp:* (``dynamodb_stream_router.condition.Expression``): The Expression (normally a group of Key/New/Old/HasChanged) to group
     """
+
     def __init__(self, exp: Expression):
         self.exp = f"({exp})"
 
@@ -451,6 +452,7 @@ class HasChanged(Expression):
     :returns:
         ``Expression``
     """
+
     def __new__(cls, keys: List[str]):
         return Expression(f"self._has_changed({keys})")
 
@@ -468,7 +470,7 @@ class IsType(Expression):
             "M": f"isinstance({cls.__path}, dict)",
             "B": f"isinstance({cls.__path}, bytes)",
             "NULL": f"{cls.__path} is None",
-            "BOOL": f"isinstance({cls.__path}, bool)"
+            "BOOL": f"isinstance({cls.__path}, bool)",
         }
 
         return Expression(cls.__is_type(type_str))
@@ -494,17 +496,9 @@ class Key(Expression):
         * *full_path:* (``str``): If provided self.exp will be overwritten with this value
     """
 
-    def __init__(
-        self,
-        image: str = None,
-        key: str = None,
-        full_path: str = None
-    ):
+    def __init__(self, image: str = None, key: str = None, full_path: str = None):
 
-        if not (
-            full_path
-            or (image and key)
-        ):
+        if not (full_path or (image and key)):
             raise AttributeError("Key() expects either full_path, or image and key")
 
         path_base = "self.record"
@@ -512,7 +506,9 @@ class Key(Expression):
         if full_path:
             self.path = full_path
         else:
-            self.path = f"""{path_base}[{self.quote_str(image)}][{self.quote_str(key)}]"""
+            self.path = (
+                f"""{path_base}[{self.quote_str(image)}][{self.quote_str(key)}]"""
+            )
         self.exp = self.path
         super().__init__(self.exp)
 
@@ -579,7 +575,8 @@ class Key(Expression):
 
         if obj_type not in self.__known_types:
             raise TypeError(
-                f"Key.is_type() only supports the following types: {self.__known_types_str}")
+                f"Key.is_type() only supports the following types: {self.__known_types_str}"
+            )
 
         type_name = obj_type.__name__
 
