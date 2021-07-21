@@ -12,7 +12,7 @@ from typing import (
     List,
     NamedTuple,
     Union,
-    Any
+    Any,
 )
 from uuid import uuid4
 
@@ -68,10 +68,10 @@ class RecordBase(NamedTuple):
     SizeBytes: int = 0
 
 
-class Record(RecordBase):
+class StreamRecord(RecordBase):
 
-    def __new__(cls, **kwargs):
-        if "dynamodb" in kwargs:
+    def __new__(cls, record) -> RecordBase:
+        if "dynamodb" in record:
             for k in [
                 "NewImage",
                 "OldImage",
@@ -80,21 +80,20 @@ class Record(RecordBase):
                 "SizeBytes"
             ]:
 
-                if k in kwargs["dynamodb"]:
-
+                if k in record["dynamodb"]:
                     if k in ("OldImage", "NewImage"):
-                        kwargs[k] = parse_image(kwargs["dynamodb"][k])
+                        record[k] = parse_image(record["dynamodb"][k])
                     else:
-                        kwargs[k] = kwargs["dynamodb"][k]
+                        record[k] = record["dynamodb"][k]
 
-            del kwargs["dynamodb"]
+            del record["dynamodb"]
 
         try:
-            kwargs["eventName"] = Operations[kwargs.get("eventName")].name
+            record["eventName"] = Operations[record.get("eventName")].name
         except KeyError:
-            raise TypeError(f"Unknown eventName {kwargs['eventName']}'")
+            raise TypeError(f"Unknown eventName {record['eventName']}'")
 
-        return super().__new__(cls, **kwargs)
+        return super().__new__(cls, **record)
 
 
 class Result(NamedTuple):
@@ -106,22 +105,39 @@ class Result(NamedTuple):
     value: Any
 
 
-class StreamRouter:
+class RouteSet(NamedTuple):
+    REMOVE: List[Route]
+    INSERT: List[Route]
+    UPDATE: List[Route]
 
+
+class StreamRouter:
     __instance = None
+    __threads = 0
     __threaded = False
     __executor = None
 
     def __new__(
         cls,
         *args,
+        threads: int = None,
         threaded: bool = False,
         **kwargs
     ):
+        if not threaded and threads is not None:
+            raise AttributeError("Argument 'threads' doesn't make sense if 'threaded=False'")
+
+        if threads == 0:
+            raise AttributeError("Number of threads must be > 0")
+
         if cls.__instance is None:
-            cls.__threaded = threaded
-            if cls.__threaded:
+            cls.__threads = threads or 0
+            cls.__threaded = threaded or bool(threads)
+            if threads:
+                cls.__executor = ThreadPoolExecutor(max_workers=threads)
+            elif threaded:
                 cls.__executor = ThreadPoolExecutor()
+
             cls.__instance = super().__new__(cls, *args, **kwargs)
 
         return cls.__instance
@@ -136,7 +152,11 @@ class StreamRouter:
         """
 
         #: A list of dynamodb_stream_router.Route that are registered to the router
-        self.routes: List[Route] = []
+        self.routes: RouteSet = RouteSet(**{
+            "REMOVE": [],
+            "INSERT": [],
+            "UPDATE": []
+        })
         self.format_record = True
 
     def update(
@@ -209,10 +229,43 @@ class StreamRouter:
                 filter=filter,
                 condition_expression=condition_expression
             )
-            self.routes.append(route)
+
+            for x in route.operations:
+                self.routes._asdict()[x].append(route)
+
             return func
 
         return inner
+
+    @property
+    def threaded(self) -> bool:
+        return self.__threaded
+
+    @threaded.setter
+    def threaded(self, val: bool):
+        if val == self.__threaded:
+            return
+        if True and not self.__threads:
+            self.__executor = ThreadPoolExecutor()
+        else:
+            self.__executor = ThreadPoolExecutor(max_threads=self.__threads)
+
+    @property
+    def threads(self) -> int:
+        return self.__threads or 0
+
+    @threads.setter
+    def threads(self, val: int):
+        if val == self.__threads:
+            return
+
+        if val == 0:
+            self.__threaded = False
+
+        else:
+            self.__threaded = True
+            self.__threads = val
+            self.__executor = ThreadPoolExecutor(max_threads=val)
 
     @property
     def threaded(self) -> bool:
@@ -222,13 +275,7 @@ class StreamRouter:
         :getter: Returns a boolean indicating if threading will be used
         :type: bool
         """
-        return self.__threaded
-
-    @threaded.setter
-    def threaded(self, val: bool):
-        """If True, then each record will be handled in its own thread using ThreadPoolExecutor"""
-
-        self.__threaded = val
+        return bool(self.__threads)
 
     def resolve_all(self, records: List[dict]) -> List[Result]:
         """
@@ -241,12 +288,11 @@ class StreamRouter:
         :returns:
             ``List[dynamodb_stream_router.Result]``
         """
-        self.records = [
-            Record(**record) for record in records
-        ]
+        self.records = [StreamRecord(x) for x in records]
 
-        if self.threaded:
-            res = self.__executor.map(self.resolve_record, self.records)
+        if self.threads:
+            with self.__executor as X:
+                res = X.map(self.resolve_record, self.records)
         else:
             res = map(self.resolve_record, self.records)
 
@@ -256,7 +302,7 @@ class StreamRouter:
 
         return results
 
-    def resolve_record(self, record: Record) -> List[Result]:
+    def resolve_record(self, record: StreamRecord) -> List[Result]:
         """
         Resolves a single record, returning a list containing ``Result`` objects for any
         routes that were called on the record
@@ -268,24 +314,25 @@ class StreamRouter:
             ``List[dynamodb_stream_router.Result]``
         """
 
-        routes = [
-            x for x in self.routes
-            if record.eventName in x.operations
-        ]
-
         routes_to_call = []
-        for route in routes:
+        op = record.eventName
+
+        for route in self.routes._asdict()[op]:
+            ce = route.condition_expression
+            rf = route.filter
             if (
-                not (route.condition_expression or route.filter)
+                not (ce or rf)
                 or (
-                    route.condition_expression is not None
-                    and route.condition_expression(record)
+                    ce is not None
+                    and ce(record)
                 )
-                or self.test_conditional_func(record, route.filter)
+                or self.test_conditional_func(record, rf)
             ):
                 routes_to_call.append(route)
 
-        return map(self.__execute_route_callable, routes_to_call, [record for _ in routes_to_call])
+        record_args = [record for _ in routes_to_call]
+
+        return map(self.__execute_route_callable, routes_to_call, record_args)
 
     def __execute_route_callable(self, route, record):
         return Result(
@@ -346,7 +393,7 @@ def parse_image(image: dict):
         'BOOL': lambda x: x,
         'NS': parseList,
         'NULL': lambda x: None,
-        'SS': list,
+        'SS': parseList,
         'M': parseMap
     }
 
@@ -357,6 +404,7 @@ def parse_image(image: dict):
             dynamoType = next(iter(item[attributeName]))
             val = typeMap[dynamoType](item[attributeName][dynamoType])
             newItem[attributeName] = val
+
         items[i] = newItem
         i += 1
 
