@@ -1,46 +1,14 @@
 #!/usr/bin/env python3.8
-from decimal import Decimal
+from __future__ import annotations
 from typing import (
     Any,
     List,
-    Union
+    Union,
 )
-from .router import Record
+from .router import StreamRecord
 
 
-class ExpressionBase:
-    def __init__(self):
-        self.exp = ""
-
-    def __and__(self, other):
-        return Expression(f"{self.exp} and {other.exp}")
-
-    def __or__(self, other):
-        return Expression(f"{self.exp} or {other.exp}")
-
-    def __ror__(self, other):
-        return Expression(f"{other.exp} or {self.exp}")
-
-    def __rand__(self, other):
-        return Expression(f"{other.exp} and {self.exp}")
-
-    def __call__(self):
-        return Expression(f"({self.exp})")
-
-    @staticmethod
-    def quote_str(val: Any) -> Any:
-        """
-        Returns a value wrapped if double quotes if it is a string, otherwise returns the original value
-
-        :Keyword Arguments:
-            * *val:* (``Any`): The value to process
-
-        :returns: ``Any``
-        """
-        return f'"{val}"' if isinstance(val, str) else val
-
-
-class Expression(ExpressionBase):
+class Expression:
     """
     A chain of Key, Old, New, HasChanged objects that are formed to create a final expression that can be evaluated against a
     stream record. It doesn't really make sense to create an object of this type directly. It is a byproduct of creating an
@@ -64,26 +32,95 @@ class Expression(ExpressionBase):
         # returns True
 
     """
-    __record = None
 
     def __init__(self, exp):
         self.exp = exp
+        self.record = None
+
+    def __and__(self, other):
+        return Expression(f"{self.exp} and {other.exp}")
+
+    def __or__(self, other):
+        return Expression(f"{self.exp} or {other.exp}")
+
+    def __ror__(self, other):
+        return Expression(f"{other.exp} or {self.exp}")
+
+    def __rand__(self, other):
+        return Expression(f"{other.exp} and {self.exp}")
+
+    @staticmethod
+    def __index_getter__(exp, index):
+        if isinstance(exp, list) and len(exp) >= index:
+            return exp[index]
+        else:
+            return False
+
+    def __getitem__(self, index):
+        if isinstance(index, int):
+            return Expression(f"self.__index_getter__({self.exp}, {index})")
+        else:
+            return Expression(f"{self.exp}.get({self.quote_str(index)})")
+
+    @staticmethod
+    def __attribute_getter__(exp, name):
+        if isinstance(exp, dict):
+            return exp.get(name, False)
+        else:
+            return False
+
+    def __getattribute__(self, name):
+        try:
+            return super().__getattribute__(name)
+        except AttributeError:
+            name = self.quote_str(name)
+            return Expression(f"self.__attribute_getter__({self.exp}, {name})")
+
+    def eq(self, val: Any):
+        """
+        Returns the equality of the current item and ``val`` when evaluated
+
+        :Arguments:
+            * *val:* (``Any``): The value to compare the current item to
+
+        :returns:
+            ``Expression``
+        """
+        return Expression(f"{self.exp} == {self.quote_str(val)}")
+
+    @staticmethod
+    def quote_str(val: Any) -> Any:
+        """
+        Returns a value wrapped if double quotes if it is a string, otherwise returns the original value
+
+        :Keyword Arguments:
+            * *val:* (``Any`): The value to process
+
+        :returns: ``Any``
+        """
+        return f'"{val}"' if isinstance(val, str) else val
 
     def __str__(self):
         return self.exp
 
-    def __call__(self, record=None):
-        if record:
-            self.record = record
+    def __call__(self, record: StreamRecord) -> bool:
+        self.record = record
+        return eval(self.exp)
 
-        if self.record is None:
-            raise Exception(
-                "Cannot evaluate without attribute 'record' being set")
+    def _has_changed(self, keys):
+        old_keys = list(self.record.OldImage.keys())
+        new_keys = list(self.record.NewImage.keys())
 
-        return eval(str(self))
+        return bool([
+            k for k in keys
+            if (
+                k in old_keys
+                and k in new_keys
+            )
+            and self.record.NewImage[k] != self.record.OldImage[k]
+        ])
 
     def _is_type(self, type_str):
-        print("CALLED _is_type()")
         self.type_map = {
             "S": "lambda x: isinstance(x, str)",
             "L": lambda x: self.is_l(x),
@@ -98,7 +135,6 @@ class Expression(ExpressionBase):
         if type_str not in self.type_map:
             raise TypeError(f"Unknown Dynamodb type '{type_str}'")
 
-        print(self.type_map[type_str])
         return Expression(self.type_map[type_str])
 
     def is_bytes(self, val):
@@ -136,231 +172,6 @@ class Expression(ExpressionBase):
 
     def is_m(self, val):
         return isinstance(val, dict)
-
-    @property
-    def record(self) -> dict:
-        """
-        The stream record that will be inspected by the expression. This must be set before a call to
-        Expression.evaluate()
-
-        :returns:
-            ``dict``
-        """
-        return self.__record
-
-    @record.setter
-    def record(self, record: Union[dict, Record]) -> dict:
-        if not isinstance(record, (dict, Record)):
-            raise TypeError("Expression.record must be a dict or instance of dynamodb_stream_router.Record")
-
-        if isinstance(record, dict):
-            try:
-                record = Record(**record)
-            except TypeError:
-                raise TypeError("Invalid stream record")
-
-        self.__record = record
-
-    def evaluate(self, record: dict = None) -> bool:
-        """
-        Evaluates the stored expression, using ``record`` as the stream record to inspect. If record is not passed then self.record
-        will be used. If record is None and self.record is not set an exception will be raised
-
-        :Keyword Arguments:
-            * *record:* (``dict``): The stream record to inspect
-
-        :returns:
-            ``bool``
-        """
-        return self(record=record)
-
-    def invert(self):
-        """
-        Inverts the end result of an Expression
-
-        :returns:
-            ``Expression``
-        """
-        return Expression(f"not {self.exp}")
-
-
-class Group(ExpressionBase):
-    """
-    Used to group statements (New, Old, Key, HasChanged) together and set precedence.
-    Example:
-
-    .. highlight:: python
-    .. code-block:: python
-
-        from dynamodb_stream_router import Group, New, Old, HasChannged
-
-        exp = Group(New("sk").eq("foo") & Old("sk").ne("bar")) | HasChanged(["baz"])
-
-    In simple terms, Group provides the same functionality of grouping statements using '()' in python
-
-    :Arguments:
-        * *exp:* (``dynamodb_stream_router.condition.Expression``): The Expression (normally a group of Key/New/Old/HasChanged) to group
-    """
-    def __init__(self, exp: Expression):
-        self.exp = f"({exp})"
-
-
-class HasChanged(Expression):
-    """
-    Iterates through a string or a list of strings, representing dictionary keys, to test if that particular key exists
-    in, and differs between, the old and new images. The first time a change is detected the method will return True. If
-    no matches are found by the last iteration then the method will return False. This is a wrapper around Expression.__has_changed()
-    and is the intended way to use it. When evaluated it will return a boolean if any of the values at ``keys`` has changed.
-
-    :Keyword Arguments:
-        * *keys:* (``List[str]``): A list of keys to test for change
-
-    :returns:
-        ``Expression``
-    """
-    def __new__(cls, keys: List[str]):
-        return Expression(cls.__has_changed(keys))
-
-    @classmethod
-    def __has_changed(cls, key: Union[str, List[str]]) -> str:
-        if isinstance(key, list):
-            exps = [
-                cls.__has_changed(x) for x in key
-            ]
-            op = " or "
-            exp = op.join(exps)
-
-        else:
-            key = ExpressionBase.quote_str(key)
-            exp = f"""self.record.OldImage.get({key}) != self.record.NewImage.get({key})"""
-
-        return exp
-
-
-class IsType(Expression):
-    __path = None
-
-    def __new__(cls, path: Expression, type_str: str):
-        cls.__path = str(path)
-        cls.type_map = {
-            "S": f"isinstance({cls.__path}, str)",
-            "L": f"self.is_l({cls.__path})",
-            "SS": f"self.is_ss({cls.__path})",
-            "NS": f"self.is_ns({cls.__path})",
-            "M": f"isinstance({cls.__path}, dict)",
-            "B": f"isinstance({cls.__path}, bytes)",
-            "NULL": f"{cls.__path} is None",
-            "BOOL": f"isinstance({cls.__path}, bool)"
-        }
-
-        return Expression(cls.__is_type(type_str))
-
-    @classmethod
-    def __is_type(cls, type_str):
-        print("CALLED _is_type()")
-
-        if type_str not in cls.type_map:
-            raise TypeError(f"Unknown Dynamodb type '{type_str}'")
-
-        func = cls.type_map[type_str]
-        print(func)
-        return func
-
-
-class Key(ExpressionBase):
-    """
-    Provides methods intended to be used with New() and Old() for building an Expression. While this can be accessed directly,
-    it is recommended to use New and Old, which inherit all of Key's methods.
-
-    :Keyword Arguments:
-        * *image:* (``str``): The image to inspect. Can be old | new
-        * *key:* (``str``): The key inside of the image to operate on
-        * *full_path:* (``str``): If provided self.exp will be overwritten with this value
-    """
-    __known_types = (
-        list,
-        dict,
-        int,
-        float,
-        Decimal,
-        str,
-        bool
-    )
-
-    __known_types_str = ", ".join([
-        str(x) for x in __known_types
-    ])
-
-    def __init__(
-        self,
-        image: str = None,
-        key: str = None,
-        full_path: str = None
-    ):
-
-        super().__init__()
-        if not (
-            full_path
-            or (image and key)
-        ):
-            raise AttributeError("Key() expects either full_path, or image and key")
-
-        path_base = "self.record"
-        self.base = path_base
-        if full_path:
-            self.path = full_path
-        else:
-            self.path = f"""{path_base}[{self.quote_str(image)}][{self.quote_str(key)}]"""
-        self.exp = None
-
-    def _is_type(self, type_str):
-        print("CALLED _is_type()")
-        self.type_map = {
-            "S": "lambda x: isinstance(x, str)",
-            "L": lambda x: self.is_l(x),
-            "SS": lambda x: self.is_ss(x),
-            "NS": lambda x: self.is_ns(x),
-            "M": lambda x: isinstance(x, dict),
-            "B": lambda x: isinstance(x, bytes),
-            "NULL": lambda x: x is None,
-            "BOOL": lambda x: isinstance(x, bool)
-        }
-
-        if type_str not in self.type_map:
-            raise TypeError(f"Unknown Dynamodb type '{type_str}'")
-
-        print(self.type_map[type_str])
-        return Expression(f"{self.type_map[type_str]}({self.path})")
-
-    def is_type(self, type_name):
-        return self._is_type(type_name)
-
-    def __getitem__(self, index):
-        return Key(full_path=f"{self.path}[{self.quote_str(index)}]")
-
-    def get(self, key: str):
-        """
-        Returns the value at the specified key when evaluated. Mimics ``dict.get()``
-
-        :Arguments:
-            * *key:* (``str``): The key of the current item to return
-
-        :returns:
-            ``Expression``
-        """
-        return Key(full_path=f"{self.path}.get({self.quote_str(key)})")
-
-    def eq(self, val: Any) -> Expression:
-        """
-        Returns the equality of the current item and ``val`` when evaluated
-
-        :Arguments:
-            * *val:* (``Any``): The value to compare the current item to
-
-        :returns:
-            ``Expression``
-        """
-        return Expression(f"{self.path} == {self.quote_str(val)}")
 
     def ne(self, val: Any) -> Expression:
         """
@@ -583,6 +394,146 @@ class Key(ExpressionBase):
         """
         return Expression(f"bool({self.path})")
 
+    def evaluate(self, record: StreamRecord) -> bool:
+        """
+        Evaluates the stored expression, using ``record`` as the stream record to inspect. If record is not passed then self.record
+        will be used. If record is None and self.record is not set an exception will be raised
+
+        :Keyword Arguments:
+            * *record:* (``dict``): The stream record to inspect
+
+        :returns:
+            ``bool``
+        """
+        return self(record)
+
+    def invert(self):
+        """
+        Inverts the end result of an Expression
+
+        :returns:
+            ``Expression``
+        """
+        return Expression(f"not {self.exp}")
+
+
+class Group(Expression):
+    """
+    Used to group statements (New, Old, Key, HasChanged) together and set precedence.
+    Example:
+
+    .. highlight:: python
+    .. code-block:: python
+
+        from dynamodb_stream_router import Group, New, Old, HasChannged
+
+        exp = Group(New("sk").eq("foo") & Old("sk").ne("bar")) | HasChanged(["baz"])
+
+    In simple terms, Group provides the same functionality of grouping statements using '()' in python
+
+    :Arguments:
+        * *exp:* (``dynamodb_stream_router.condition.Expression``): The Expression (normally a group of Key/New/Old/HasChanged) to group
+    """
+    def __init__(self, exp: Expression):
+        self.exp = f"({exp})"
+
+
+class HasChanged(Expression):
+    """
+    Iterates through a string or a list of strings, representing dictionary keys, to test if that particular key exists
+    in, and differs between, the old and new images. The first time a change is detected the method will return True. If
+    no matches are found by the last iteration then the method will return False. This is a wrapper around Expression.__has_changed()
+    and is the intended way to use it. When evaluated it will return a boolean if any of the values at ``keys`` has changed.
+
+    :Keyword Arguments:
+        * *keys:* (``List[str]``): A list of keys to test for change
+
+    :returns:
+        ``Expression``
+    """
+    def __new__(cls, keys: List[str]):
+        return Expression(f"self._has_changed({keys})")
+
+
+class IsType(Expression):
+    __path = None
+
+    def __new__(cls, path: Expression, type_str: str):
+        cls.__path = str(path)
+        cls.type_map = {
+            "S": f"isinstance({cls.__path}, str)",
+            "L": f"self.is_l({cls.__path})",
+            "SS": f"self.is_ss({cls.__path})",
+            "NS": f"self.is_ns({cls.__path})",
+            "M": f"isinstance({cls.__path}, dict)",
+            "B": f"isinstance({cls.__path}, bytes)",
+            "NULL": f"{cls.__path} is None",
+            "BOOL": f"isinstance({cls.__path}, bool)"
+        }
+
+        return Expression(cls.__is_type(type_str))
+
+    @classmethod
+    def __is_type(cls, type_str):
+        if type_str not in cls.type_map:
+            raise TypeError(f"Unknown Dynamodb type '{type_str}'")
+
+        func = cls.type_map[type_str]
+
+        return func
+
+
+class Key(Expression):
+    """
+    Provides methods intended to be used with New() and Old() for building an Expression. While this can be accessed directly,
+    it is recommended to use New and Old, which inherit all of Key's methods.
+
+    :Keyword Arguments:
+        * *image:* (``str``): The image to inspect. Can be old | new
+        * *key:* (``str``): The key inside of the image to operate on
+        * *full_path:* (``str``): If provided self.exp will be overwritten with this value
+    """
+
+    def __init__(
+        self,
+        image: str = None,
+        key: str = None,
+        full_path: str = None
+    ):
+
+        if not (
+            full_path
+            or (image and key)
+        ):
+            raise AttributeError("Key() expects either full_path, or image and key")
+
+        path_base = "self.record"
+        self.base = path_base
+        if full_path:
+            self.path = full_path
+        else:
+            self.path = f"""{path_base}[{self.quote_str(image)}][{self.quote_str(key)}]"""
+        self.exp = self.path
+        super().__init__(self.exp)
+
+    def __getattribute__(self, name: str) -> Any:
+        try:
+            return super().__getattribute__(name)
+        except AttributeError:
+            return f"{self.path}.get({self.quote_str(name)})"
+
+    def get(self, key: str):
+        """
+        Returns the value at the specified key when evaluated. Mimics ``dict.get()``
+
+        :Arguments:
+            * *key:* (``str``): The key of the current item to return
+
+        :returns:
+            ``Expression``
+        """
+        return Key(full_path=f"{self.path}.get({self.quote_str(key)})")
+
     """
     def is_type(self, obj_type: type) -> Expression:
         Returns boolena indicating if the current item is of type ``obj_type`` when evaluated.
@@ -643,8 +594,13 @@ class Old(Key):
     :Arguments:
         * *key:* (``str``): The key in the old image to inspect
     """
-    def __init__(self, key: str):
-        full_path = f"""self.record.OldImage["{key}"]"""
+
+    def __init__(self, key: str = None):
+        if key is not None:
+            full_path = f"""self.record.OldImage["{key}"]"""
+        else:
+            full_path = "self.record.OldImage"
+
         super().__init__(full_path=full_path)
 
     def __str__(self):
@@ -659,8 +615,13 @@ class New(Key):
     :Arguments:
         * *key:* (``str``): The key in the new image to inspect
     """
-    def __init__(self, key: str):
-        full_path = f"""self.record.NewImage["{key}"]"""
+
+    def __init__(self, key: str = None):
+        if key is not None:
+            full_path = f"""self.record.NewImage["{key}"]"""
+        else:
+            full_path = "self.record.NewImage"
+
         super().__init__(full_path=full_path)
 
     def __str__(self):
