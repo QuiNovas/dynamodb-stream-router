@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='dynamodb-stream-router',
-    version='0.0.1',
+    version='0.0.2',
     description='A framework for content-based routing of records in a Dynamodb Stream to the callable that should handle them',
     author='Mathew Moon',
     author_email='mmoon@quinovas.com',
@@ -15,12 +15,12 @@ setup(
     long_description_content_type='text/x-rst',
     packages=["dynamodb_stream_router"],
     package_dir={"dynamodb_stream_router": "dynamodb_stream_router"},
-    install_requires=[],
+    install_requires=["typeguard"],
     scripts=[],
     python_requires=">=3.8",
     include_package_data=True,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3.8',

@@ -50,23 +50,30 @@ class Route(NamedTuple):
     filter: Union[Callable, List[Callable]] = []
 
 
-class RecordBase(NamedTuple):
-    eventName: Operations
-    StreamViewType: StreamViewType
-    awsRegion: str = ""
-    eventID: str = str(uuid4())
-    eventSource: str = "aws:dynamodb"
-    eventSourceARN: str = ""
-    eventVersion: str = ""
-    Keys: dict = None
-    NewImage: dict = {}
-    OldImage: dict = {}
-    SequenceNumber: str = str(uuid4())
-    SizeBytes: int = 0
+__STREAM_RECORD_TYPES = (
+    ("eventName", Operations),
+    ("StreamViewType", StreamViewType),
+    ("awsRegion", str),
+    ("eventID", str),
+    ("eventSource", str),
+    ("eventSourceARN", str),
+    ("eventVersion", str),
+    ("Keys", dict),
+    ("NewImage", dict),
+    ("OldImage", dict),
+    ("SequenceNumber", str),
+    ("SizeBytes", int)
+
+)
 
 
-class StreamRecord(RecordBase):
-    def __new__(cls, record) -> RecordBase:
+class StreamRecord(
+    NamedTuple(
+        "StreamRecord",
+        __STREAM_RECORD_TYPES
+    )
+):
+    def __new__(cls, record):
         if "dynamodb" in record:
             for k in [
                 "NewImage",
@@ -83,6 +90,24 @@ class StreamRecord(RecordBase):
                         record[k] = record["dynamodb"][k]
 
             del record["dynamodb"]
+
+        defaults = {
+            "awsRegion": "",
+            "eventID": "",
+            "eventSource": "aws:dynamodb",
+            "eventSourceARN": "",
+            "eventVersion": "",
+            "Keys": {},
+            "OldImage": {},
+            "NewImage": {},
+            "SequenceNumber": "",
+            "SizeBytes": 0
+        }
+
+        record = {
+            **defaults,
+            **record
+        }
 
         try:
             record["eventName"] = Operations[record.get("eventName")].name
@@ -272,8 +297,7 @@ class StreamRouter:
         self.records = [StreamRecord(x) for x in records]
 
         if self.threads:
-            with self.__executor as X:
-                res = X.map(self.resolve_record, self.records)
+            res = self.__executor.map(self.resolve_record, self.records)
         else:
             res = map(self.resolve_record, self.records)
 
