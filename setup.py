@@ -15,7 +15,7 @@ setup(
     long_description_content_type='text/x-rst',
     packages=["dynamodb_stream_router"],
     package_dir={"dynamodb_stream_router": "dynamodb_stream_router"},
-    install_requires=["typeguard"],
+    install_requires=["typeguard", "sly"],
     scripts=[],
     python_requires=">=3.8",
     include_package_data=True,
