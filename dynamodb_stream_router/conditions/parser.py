@@ -1,10 +1,16 @@
 #!/usr/bin/env python3.8
 # pyright: reportUndefinedVariable=false
+from typing import TYPE_CHECKING
 from sly import Parser
 from .lexer import ExpressionLexer
 from re import match
+from typing import Callable
 
-StreamRecord = object
+
+if TYPE_CHECKING:
+    from ..router import StreamRecord
+else:
+    StreamRecord = object
 
 
 def is_bytes(val):
@@ -54,10 +60,156 @@ def is_m(val):
 
 
 class Expression(Parser):
+    r"""
+    .. _dynamodb_stream_router.conditions.Expression:
+
+    Used to build an expression from a string that, when passed to the evaluation method, will return a bool
+    by executing the statements in the expression against a `dynamodb_stream_router.router.StreamRecord`_.
+    Example  of testing an expression directly:
+
+    .. highlight:: python
+    .. code-block:: python
+
+        from dynamodb_stream_parser.conditions.parser import Expression
+        from dynamodb_stream_router.router import StreamRouter, Record
+
+
+        router = StreamRouter(threaded=True)
+
+        item = {
+            "StreamViewType": "NEW_AND_OLD_IMAGES",
+            "eventName": "UPDATE",
+            "dynamodb": {
+                "OldImage": {
+                    "type": {
+                        "M": {
+                            "foo": {
+                                "M": {
+                                    "bar": {
+                                        "L": [
+                                            {"S": "baz"}
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "NewImage": {
+                    "type": {"S": "sometype"}
+                }
+            }
+        }
+
+        parser = Expression()
+        exp = "$NEW.type == 'sometype' & has_changed('type')"
+        res = exp.evaluate(exp, record=Record(item))
+        print(exp.evaluate())
+        # Prints 'True'
+
+
+        ''' Using an expression with StreamRouter '''
+        from dynamodb_stream_parser.conditions.parser import Expression
+        from dynamodb_stream_router.router import StreamRouter, Record
+
+        router = StreamRouter()
+        exp = "$NEW.type == 'sometype' & has_changed('type')
+
+
+        @router.update(condition_expression=exp)
+        def func_name(item):
+            return 1
+
+
+        records = [StreamRecord(item)]
+
+        res = router.resolve_all(items)
+        print([x.value for x in res])
+
+        # prints '[1]'
+
+
+    More about using `dynamodb_stream_router.router.StreamRouter`_
+
+    .. list-table:: Identifiers
+        :widths: 10 25 25
+        :header-rows: 1
+
+        * - Type
+          - Description
+          - Example
+        * - VALUE
+          - A quoted string (single or double), integer, or float representing a literal value
+          - 'foo'
+        * - $OLD
+          - A reference to StreamRecord.OldImage
+          - $OLD.foo
+        * - $NEW
+          - A reference to StreamRecord.NewImage
+          - $NEW.bar
+        * - PATH
+          - A path inside of a StreamRecord. Paths always start with $OLD or $NEW
+          - $OLD.foo.bar or $OLD["foo"]["bar"] or $NEW.foo[0]
+        * - INDEX
+          - A numeric index into a PATH where PATH is a List
+          - $OLD.foo[0]
+        * - Key
+          - A python-style key reference within a PATH
+          - $OLD["foo"]
+
+
+    .. list-table:: Operators
+        :widths: 10 25
+        :header-rows: 1
+
+        * - Operator
+          - Action
+        * - &
+          - Logical AND
+        * - \|
+          - Logical OR
+        * - ()
+          - Grouping of expressions
+        * - ==
+          - Equality
+        * - !=
+          - Non equality
+        * - >
+          - Greater than
+        * - >=
+          - Greater than or equal to
+        * - <
+          - Less than
+        * - <=
+          - Less than or equal to
+        * - =~
+          - Regex comparison <value> =~ <regex>
+
+
+    Comparison operators, except for regex comparison, can compare PATH to VALUE, PATH to PATH, or even VALUE to VALUE.
+
+
+    .. list-table:: Functions
+        :widths: 20 20 50
+        :header-rows: 1
+
+        * - Name
+          - Description
+          - Arguments
+        * - has_changed(VALUE, VALUE)
+          - Comma-separated list of quoted values
+          - Tests each value to see if that key in the top level of $OLD differs from $NEW. Returns True if any of the elements have changed
+        * - is_type(PATH, TYPE)
+          - PATH - The path to a value to test and the Dynamodb type to test for, TYPE - Any Dynamodb Type
+          - Returns if PATH is of type TYPE. TYPE can be any unquoted Dynamodb type (S, SS, B, BS, N, NS, M, BOOL, L)
+        * - attribute_exists(PATH)
+          - PATH - An element to test the existence of
+          - Returns a bool indicating if the specified key/index exists in PATH
+    """
 
     _expression_cache = {}
 
-    def __init__(self, record=None):
+    def __init__(self, record: StreamRecord = None):
         self.__record = None
         self.__old_image = None
         self.__new_image = None
@@ -67,15 +219,39 @@ class Expression(Parser):
             self.record = record
         super().__init__()
 
-    def evaluate(self, expression, record=None):
+    def evaluate(self, expression, record: StreamRecord = None) -> bool:
+        """
+        Evaluates an expression against a StreamRecord, returning the resulting bool
+
+        :Arguments:
+          * *expression:* (``str``): The expression to evaluate
+
+        :Keyword Arguments:
+            * *record:* (`dynamodb_stream_router.router.StreamRecord`_): The record to evaluate against. If not provided then self.record will be used. If self.record is None TypeError will be raised
+
+        :returns:
+            ``bool``
+        """
+
+        record = record or self.record
+        if record is None:
+            raise TypeError("Expression().record must be set or 'record' passed to evaluate.")
+
         if callable(expression):
             return expression(record or self.record)
         else:
-            if record:
-                self.record = record
-            return self.parse(expression)(record)
+            return self.parse(expression)(record or self.record)
 
-    def parse(self, expression):
+    def parse(self, expression: str) -> Callable:
+        """
+        Takes an expression string and returns a function, which can evaluate against a record
+
+        :Arguments:
+            * *expression*: (``str``): An expressions as a string to parse
+
+        :returns:
+            ``Callable``
+        """
         if expression not in self._expression_cache:
             self._expression_cache[expression] = super().parse(
                 ExpressionLexer().tokenize(expression)
@@ -84,26 +260,56 @@ class Expression(Parser):
 
     @property
     def old(self) -> dict:
+        """
+        Shorthand for ``self.record.OldImage``
+
+        :returns:
+            ``dict``
+        """
         return self.__old_image
 
     @property
     def new(self) -> dict:
+        """
+        Shorthand for ``self.record.NewImage``
+
+        :returns:
+            ``dict``
+        """
         return self.__new_image
 
     @property
     def old_keys(self) -> list:
+        """
+        Shorthand for ``list(self.record.OldImage.keys())``
+
+        :returns:
+            ``list``
+        """
         return self.__old_keys
 
     @property
     def new_keys(self) -> list:
+        """
+        Shorthand for ``list(self.record.NewImage.keys())``
+
+        :returns:
+            ``list``
+        """
         return self.__new_keys
 
     @property
     def record(self) -> StreamRecord:
+        """
+        The StreamRecord to evaluate against
+
+        :returns:
+            `dynamodb_stream_router.router.StreamRecord`_
+        """
         return self.__record
 
     @staticmethod
-    def strip_quotes(val):
+    def _strip_quotes(val: str) -> str:
         return val[1:-1]
 
     @record.setter
@@ -270,7 +476,7 @@ class Expression(Parser):
         else:
             VALUE = VALUE.replace(r'\"', '"')
 
-        return lambda m: self.strip_quotes(VALUE)
+        return lambda m: self._strip_quotes(VALUE)
 
     @_('operand MATCH operand')  # noqa: 821
     def function(self, f):  # noqa: 811
@@ -286,7 +492,7 @@ class Expression(Parser):
 
     @_('path "[" VALUE "]"')  # noqa: 821
     def path(self, p):  # noqa: 811
-        key = self.strip_quotes(p.VALUE)
+        key = self._strip_quotes(p.VALUE)
         path = p.path
 
         return lambda m: path(m).get(key) if isinstance(path(m), dict) else None
@@ -339,7 +545,7 @@ class Expression(Parser):
         if hasattr(p, "in_list"):
             key_list = p.in_list(p)
         else:
-            key_list = [self.strip_quotes(p.VALUE)]
+            key_list = [self._strip_quotes(p.VALUE)]
 
         def has_changed(record, keys=key_list):
             for k in keys:

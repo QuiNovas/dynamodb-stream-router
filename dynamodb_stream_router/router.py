@@ -30,16 +30,28 @@ class Operations(Enum):
 
 
 class StreamViewType(Enum):
+    """The one and only type of stream we support"""
     NEW_AND_OLD_IMAGES = auto()
 
 
 class Route(NamedTuple):
+    """
+    .. _dynamodb_stream_router.router.Route:
 
+    A route object to be registered into an instance of `dynamodb_stream_router.router.StreamRouter`_
+    See the following for usage:
+
+        * `dynamodb_stream_router.router.StreamRouter.insert`_
+        * `dynamodb_stream_router.router.StreamRouter.remove`_
+        * `dynamodb_stream_router.router.StreamRouter.update`_
+        * `dynamodb_stream_router.router.StreamRouter.Route`_
+
+    """
     #: The Callable that will be triggered if this route is a match for a record
     callable: Callable
     #: The operations that this route is registered for (UPDATE | INSERT | DELETE)
     operations: List[Operations]
-    #: Optional dynamodb_stream_router.conditions.Expression or string that can be cast to Expression to decide whether this route should be called on a record
+    #: Optional `dynamodb_stream_router.conditions.Expression`_ string or Callable to be used for route matching
     condition_expression: Union[Callable, str] = None
 
 
@@ -66,6 +78,33 @@ class StreamRecord(
         __STREAM_RECORD_TYPES
     )
 ):
+    """
+    .. _dynamodb_stream_router.router.StreamRecord:
+
+    Creates a properly formatted record to be consumed by `dynamodb_stream_router.router.StreamRouter`_
+    or `dynamodb_stream_router.conditions.Expression`_
+
+
+    :properties:
+        * *eventName:* (``str``): UPDATE | INSERT | DELETE
+        * *StreamViewType:* (``str``): NEW_AND_OLD_IMAGES is the only one we support. Any other will cause an exception
+        * *awsRegion:* (``str``)
+        * *eventID:* (``str``)
+        * *eventSource:* (``str``)
+        * *eventSourceARN:* (``str``)
+        * *eventVersion:* (``str``)
+        * *Keys:* (``dict``)
+        * *NewImage:* (``dict``)
+        * *OldImage:* (``dict``)
+        * *SequenceNumber:* (``str``)
+        * *SizeBytes:* (``int``)
+
+    :Arguments:
+        * *record:* (``dict``):  A single record from a Dynamodb stream event
+
+    :returns:
+        `dynamodb_stream_router.router.StreamRecord`_
+    """
     def __new__(cls, record):
         if "dynamodb" in record:
             for k in [
@@ -111,7 +150,12 @@ class StreamRecord(
 
 
 class Result(NamedTuple):
-    #: The complete ``Route`` object that generated this result
+    """
+    .. _dynamodb_stream_router.router.Result:
+
+    The result returned by a route called by `dynamodb_stream_router.router.StreamRouter`_
+    """
+    #: The complete `dynamodb_stream_router.router.Route`_  object that generated this result
     route: Route
     #: The original stream record passed to the Route's callable
     record: dict
@@ -126,6 +170,82 @@ class RouteSet(NamedTuple):
 
 
 class StreamRouter:
+    """
+    .. _dynamodb_stream_router.router.StreamRouter:
+
+    Intelligently decides what Callable to invoke for a given record based on the StreamRecord's eventName and optional conditions in the form
+    of callables or a condition expression that is parsed by `dynamodb_stream_router.conditions.Expression`_ . Decorators are used to register callables
+    as Route(s).
+
+    Example Usage:
+
+    .. highlight:: python
+    .. code-block:: python
+
+        from dynamodb_stream_router.router import Record, StreamRouter
+
+        router = StreamRouter()
+
+        records = [{
+            "StreamViewType": "NEW_AND_OLD_IMAGES",  # Only NEW_AND_OLD_IMAGES are supported
+            "eventName": "UPDATE",
+            "dynamodb": {
+                "OldImage": {
+                    "type": {
+                        "M": {
+                            "foo": {
+                                "M": {
+                                    "bar": {
+                                        "L": [
+                                            {"S": "baz"}
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "NewImage": {
+                    "type": {"S": "sometype"}
+                }
+            }
+        }]
+
+
+        @router.update(condition_expression="has_changed('type')")
+        def my_first_route(record):
+            return True
+
+
+        res = router.resolve_all(records)
+
+
+    In the example above the function *my_first_route()* will be called because *record.OldImage["type"]* has changed in comparison to *record.NewImage["type"].
+    This example uses `dynamodb_stream_router.conditions.Expression`_ as the condition_expression used to match the route to the record. In addition to passing
+    a string-based expression you could pass your own callable, for instance a lambda, that accepts *record* as its only required argument and returns a bool
+    indicating whether or not the route matches.
+
+    Example using a lambda as condition_expression:
+
+    .. highlight:: python
+    .. code-block:: python
+
+        from dynamodb_stream_router.router import StreamRouter
+
+        router = StreamRouter()
+
+
+        @router.update(condition_expression=lambda x: x.OldImage["type"] != x.NewImage["type"])
+        def my_first_route(record):
+            return True
+
+
+        res = router.resolve_all(records)
+
+
+    The second example (assuming we used the same list of records) would have the same result as the first
+    """
+
     __instance = None
     __threads = 0
     __threaded = False
@@ -154,11 +274,13 @@ class StreamRouter:
 
     def __init__(self, *args, **kwargs):
         """
-        Provides routing of Dynamodb Stream records to Callables based on record content and/or truthy functions
-        that may inspect the record
+        Provides routing of Dynamodb Stream records to Callables based on record eventName and an optional condition, expressed
+        as a string to be evaluated by ``dynamodb_stream_router.conditions.Expression.parse`` or a truthy function that receives
+        the record as its sole argument.
 
         :Keyword Arguments:
             * *threaded:* (``bool`): If True then each record will be processed in a separate thread using ThreadPoolExecutor
+            * *threads:* (``int`): Max number of threads for ThreadPoolExecutor. Only applies if *threaded=True*
         """
 
         #: A list of dynamodb_stream_router.Route that are registered to the router
@@ -168,19 +290,88 @@ class StreamRouter:
 
     def update(self, **kwargs) -> Callable:
         """
-        Wrapper for StreamRouter.route. Creates a route for "UPDATE" operation, taking the same arguments
+        .. _dynamodb_stream_router.router.StreamRouter.update:
+
+        Wrapper for StreamRouter.route(). Creates a route for "UPDATE" operation, taking an optional condition_expression
+
+        :Keyword Arguments:
+            * *condition_expression:* (``Union[Callable, str]``): An expression that returns a boolean indicating if
+              the route should be called for a particular record. If type is ``str`` then the expression will be parsed using
+              `dynamodb_stream_router.conditions.Expression`_ *parse()* method to generate the callable
+
+        :returns:
+            ``Callable``
+
+        Example Usage:
+
+        .. highlight:: python
+        .. code-block:: python
+
+            from dynamodb_stream_router.router import StreamRouter
+
+
+            @router.update(condition_expression="has_changed('foo')")
+            def process_foo(record):
+                pass
+
         """
         return self.route("UPDATE", **kwargs)
 
     def remove(self, **kwargs) -> Callable:
         """
-        Wrapper for StreamRouter.route. Creates a route for "REMOVE" operation, taking the same arguments
+        .. _dynamodb_stream_router.router.StreamRouter.remove:
+
+        Wrapper for StreamRouter.route(). Creates a route for "REMOVE" operation, taking an optional condition_expression
+
+        :Keyword Arguments:
+            * *condition_expression:* (``Union[Callable, str]``): An expression that returns a boolean indicating if
+              the route should be called for a particular record. If type is ``str`` then the expression will be parsed using
+              `dynamodb_stream_router.conditions.Expression`_ *parse()* method to generate the callable
+
+        :returns:
+            ``Callable``
+
+        Example Usage:
+
+        .. highlight:: python
+        .. code-block:: python
+
+            from dynamodb_stream_router.router import StreamRouter
+
+
+            @router.remove(condition_expression="has_changed('foo')")
+            def process_foo(record):
+                pass
+
         """
         return self.route("REMOVE", **kwargs)
 
     def insert(self, **kwargs) -> Callable:
         """
-        Wrapper for StreamRouter.route. Creates a route for "INSERT" operation, taking the same arguments
+        .. _dynamodb_stream_router.router.StreamRouter.insert:
+
+        Wrapper for StreamRouter.route(). Creates a route for "INSERT" operation, taking an optional condition_expression
+
+        :Keyword Arguments:
+            * *condition_expression:* (``Union[Callable, str]``): An expression that returns a boolean indicating if
+              the route should be called for a particular record. If type is ``str`` then the expression will be parsed using
+              `dynamodb_stream_router.conditions.Expression`_ *parse()* method to generate the callable
+
+        :returns:
+            ``Callable``
+
+        Example Usage:
+
+        .. highlight:: python
+        .. code-block:: python
+
+            from dynamodb_stream_router.router import StreamRouter
+
+
+            @router.insert(condition_expression="has_changed('foo')")
+            def process_foo(record):
+                pass
+
         """
         return self.route("INSERT", **kwargs)
 
@@ -191,6 +382,8 @@ class StreamRouter:
     ) -> Callable:
 
         """
+        .. _dynamodb_stream_router.router.StreamRouter.route:
+
         Used as a decorator to register a route. Accepts keyword arguments that determine under what conditions the route will
         be called. If no condition_expression is provided then the route will be called for any operations that are
         passed.
@@ -200,10 +393,32 @@ class StreamRouter:
               more of 'REMOVE | INSERT | UPDATE'
             * *condition_expression:* (``Union[Callable, str]``): An expression that returns a boolean indicating if
               the route should be called for a particular record. If type is ``str`` then the expression will be parsed using
-              ``dynamodb_stream_router.conditions.Expression.parse`` to generate the callable
+              `dynamodb_stream_router.conditions.Expression`_ *parse()*  to generate the callable
 
         :returns:
             ``Callable``
+
+        Example Usage:
+
+        .. highlight:: python
+        .. code-block:: python
+
+            from dynamodb_stream_router.router import StreamRouter
+
+
+            @router.route(["UPDATE", "INSERT", "DELETE"], condition_expression="has_changed('foo')")
+            def process_foo_any(record):
+                pass
+
+
+            @router.route(["INSERT", "DELETE"], condition_expression="has_changed('bar')")
+            def process_bar_new_and_delete(record):
+                pass
+
+
+            @router.route(["INSERT"], condition_expression="has_changed('baz')")
+            def process_new_baz(record):
+                pass
 
         """
         known_operations = [x.name for x in Operations]
@@ -233,6 +448,11 @@ class StreamRouter:
 
     @property
     def threaded(self) -> bool:
+        """
+        Whether or not to use parse each record in ThreadPoolExecutor
+
+        :type: ``bool``
+        """
         return self.__threaded
 
     @threaded.setter
@@ -246,6 +466,14 @@ class StreamRouter:
 
     @property
     def threads(self) -> int:
+        """
+        Max number of threads to use in ThreadPoolExecutor.  If self.threaded = False
+        then setting this will also set self.threaded to True. If self.threaded = True,
+        then setting this to a non-zero value will set it to False
+
+        :type: ``int``
+
+        """
         return self.__threads or 0
 
     @threads.setter
@@ -266,8 +494,7 @@ class StreamRouter:
         """
         If True, then each record will be handled in its own thread using ThreadPoolExecutor
 
-        :getter: Returns a boolean indicating if threading will be used
-        :type: bool
+        :type: ``bool``
         """
         return bool(self.__threads)
 
@@ -280,7 +507,7 @@ class StreamRouter:
             * *records:* (``List[dict]``)
 
         :returns:
-            ``List[dynamodb_stream_router.Result]``
+            List[`dynamodb_stream_router.router.Result`_ ]
         """
         self.records = [StreamRecord(x) for x in records]
 
@@ -304,7 +531,7 @@ class StreamRouter:
             * *record:* (``dict``): A single stream record
 
         :returns:
-            ``List[dynamodb_stream_router.Result]``
+            List[`dynamodb_stream_router.router.Result`_ ]
         """
 
         routes_to_call = []
@@ -338,26 +565,6 @@ class StreamRouter:
 
     def __execute_route_callable(self, route, record):
         return Result(route=route, record=record, value=route.callable(record))
-
-    @staticmethod
-    def test_conditional_func(record: dict, funcs: List[Callable]) -> bool:
-        """
-        Accepts list of Callables that will be called with ``record`` passed as an argument. Callables
-        should return a bool indicating whether or not a route should be called. If any Callable in the
-        list returns True then True will be returned by the method, otherwise False
-
-        :Arguments:
-            * *record:* (``dict``): A single stream record
-            * *funcs:* (``dict``): A list of truthy Callables
-
-        :returns:
-            ``bool``
-        """
-        for func in funcs:
-            if func(record):
-                return True
-
-        return False
 
 
 def parse_image(image: dict):
