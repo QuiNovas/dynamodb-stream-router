@@ -11,12 +11,7 @@ from typing import (
     Union,
     Any,
 )
-from uuid import uuid4
-
-if TYPE_CHECKING:
-    from .conditions import Expression
-else:
-    Expression = object
+from .conditions.parser import Expression
 
 
 if not environ.get("TYPECHECKED"):
@@ -44,10 +39,8 @@ class Route(NamedTuple):
     callable: Callable
     #: The operations that this route is registered for (UPDATE | INSERT | DELETE)
     operations: List[Operations]
-    #: Optional dynamodb_stream_router.Expression to decide whether this route should be called on a record
-    condition_expression: Expression = None
-    #: Optional list of truth Callables to decide whether this route should be called on a record
-    filter: Union[Callable, List[Callable]] = []
+    #: Optional dynamodb_stream_router.conditions.Expression or string that can be cast to Expression to decide whether this route should be called on a record
+    condition_expression: Union[Callable, str] = None
 
 
 __STREAM_RECORD_TYPES = (
@@ -171,6 +164,7 @@ class StreamRouter:
         #: A list of dynamodb_stream_router.Route that are registered to the router
         self.routes: RouteSet = RouteSet(**{"REMOVE": [], "INSERT": [], "UPDATE": []})
         self.format_record = True
+        self._condition_parser = Expression()
 
     def update(self, **kwargs) -> Callable:
         """
@@ -193,23 +187,20 @@ class StreamRouter:
     def route(
         self,
         operations: Union[str, List[str]],
-        condition_expression: Expression = None,
-        filter: Union[Callable, List[Callable]] = [],
+        condition_expression: Union[Callable, str] = None,
     ) -> Callable:
 
         """
         Used as a decorator to register a route. Accepts keyword arguments that determine under what conditions the route will
-        be called. If no condition_expression or filter is provided then the route will be called for any operations that are
-        passed. If both condition_expression and filter are passed the results of the both will be OR'd together to decide whether
-        or not the route is called for a particular record
+        be called. If no condition_expression is provided then the route will be called for any operations that are
+        passed.
 
         :Keyword Arguments:
             * *operations:* (``Union[str, List[str]``): A Dynamodb operation or list of operations. Can be one or
               more of 'REMOVE | INSERT | UPDATE'
-            * *condition_expression:* (``dynamodb_stream_router.conditions.Expression``): An expression that returns a boolean indicating if
-              the route should be called for a particular record
-            * *filter:* (``Union[Callable, List[Callable]``): A Callable, or list of Callables that accept a stream record as their
-              sole argument and return a boolean, indication if the route should be called for the record
+            * *condition_expression:* (``Union[Callable, str]``): An expression that returns a boolean indicating if
+              the route should be called for a particular record. If type is ``str`` then the expression will be parsed using
+              ``dynamodb_stream_router.conditions.Expression.parse`` to generate the callable
 
         :returns:
             ``Callable``
@@ -219,8 +210,6 @@ class StreamRouter:
 
         if not isinstance(operations, list):
             operations = [operations]
-        if not isinstance(filter, list):
-            filter = [filter]
 
         for op in operations:
             if op not in known_operations:
@@ -232,7 +221,6 @@ class StreamRouter:
             route = Route(
                 operations=operations,
                 callable=func,
-                filter=filter,
                 condition_expression=condition_expression,
             )
 
@@ -323,14 +311,26 @@ class StreamRouter:
         op = record.eventName
 
         for route in self.routes._asdict()[op]:
-            ce = route.condition_expression
-            rf = route.filter
-            if (
-                not (ce or rf)
-                or (ce is not None and ce(record))
-                or self.test_conditional_func(record, rf)
-            ):
+            if route.condition_expression is None:
                 routes_to_call.append(route)
+
+            else:
+                if isinstance(route.condition_expression, str):
+                    try:
+                        test = self._condition_parser.evaluate(
+                            route.condition_expression, record=record
+                        )
+                    except Exception as e:
+                        raise ValueError(
+                            f"Could not parse {route.condition_expression}") from e
+                else:
+                    try:
+                        test = route.condition_expression(record)
+                    except Exception as e:
+                        raise ValueError(f"Could not parse expression using {route.condition_expression}") from e
+
+                if test:
+                    routes_to_call.append(route)
 
         record_args = [record for _ in routes_to_call]
 
