@@ -194,8 +194,8 @@ class Expression(Parser):
         :header-rows: 1
 
         * - Name
-          - Description
           - Arguments
+          - Description
         * - has_changed(VALUE, VALUE)
           - Comma-separated list of quoted values
           - Tests each value to see if that key in the top level of $OLD differs from $NEW. Returns True if any of the elements have changed
