@@ -16,7 +16,6 @@ router.StreamRouter
 
 .. autoclass:: dynamodb_stream_router.router.StreamRouter
    :members:
-   :undoc-members:
    :show-inheritance:
 
 
@@ -24,6 +23,15 @@ router.Route
 ------------
 
 .. autoclass:: dynamodb_stream_router.router.Route
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+router.StreamRecord
+-------------------
+
+.. autoclass:: dynamodb_stream_router.router.StreamRecord
    :members:
    :undoc-members:
    :show-inheritance:
@@ -46,34 +54,9 @@ router.Result
 dynamodb_stream_router.conditions module
 ========================================
 
-conditions.New
---------------
+conditions.parser.Expression
+----------------------------
 
-.. autoclass:: dynamodb_stream_router.conditions.New
+.. autoclass:: dynamodb_stream_router.conditions.parser.Expression
    :members:
-   :undoc-members:
-   :show-inheritance:
-
-conditions.Old
---------------
-
-.. autoclass:: dynamodb_stream_router.conditions.Old
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-conditions.HasChanged
----------------------
-
-.. autoclass:: dynamodb_stream_router.conditions.HasChanged
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-conditions.Expression
----------------------
-
-.. autoclass:: dynamodb_stream_router.conditions.Expression
-   :members:
-   :undoc-members:
    :show-inheritance:
