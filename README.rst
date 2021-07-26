@@ -111,25 +111,25 @@ conditional_expression argument that decides whether or not the route matches. T
 Condition query language
 -------------------------
 
-Keywords:
-*********
+Keywords and types:
+*******************
 
 +----------+-------------------------------------------------------+-------------------------------------+
 | **Type** |                    **Description**                    |             **Example**             |
 +----------+-------------------------------------------------------+-------------------------------------+
-| VALUE    | A quoted string (single or double quote), integer, or | 'foo', 1, 3.8                       |
+| `VALUE`  | A quoted string (single or double quote), integer, or | 'foo', 1, 3.8                       |
 |          | float representing a literal value                    |                                     |
 +----------+-------------------------------------------------------+-------------------------------------+
 | $OLD     | A reference to StreamRecord.OldImage                  | $OLD.foo                            |
 +----------+-------------------------------------------------------+-------------------------------------+
 | $NEW     | A reference to StreamRecord.NewImage                  | $NEW.foo                            |
 +----------+-------------------------------------------------------+-------------------------------------+
-| PATH     | A path starting from a root of $OLD or $NEW.          | $OLD.foo, $NEW.foo.bar, $OLD["foo"] |
+| `PATH`   | A path starting from a root of $OLD or $NEW.          | $OLD.foo, $NEW.foo.bar, $OLD["foo"] |
 |          | Can be specified using dot syntax or python           |                                     |
 |          | style keys. When using dot reference paths must       |                                     |
 |          | conform to python's restrictions                      |                                     |
 +----------+-------------------------------------------------------+-------------------------------------+
-| INDEX    | An integer used as an index into a list or set        | $OLD.foo[0]                         |
+| `INDEX`  | An integer used as an index into a list or set        | $OLD.foo[0]                         |
 +----------+-------------------------------------------------------+-------------------------------------+
 
 
@@ -141,9 +141,9 @@ Operators:
 +------------+--------------------------------------------+
 | &          | Logical AND                                |
 +------------+--------------------------------------------+
-| \|          | Logical OR                                 |
+| \|          | Logical OR                                |
 +------------+--------------------------------------------+
-| ()         | Grouping                                   |
+| ()         | Statement grouping                         |
 +------------+--------------------------------------------+
 | ==         | Equality                                   |
 +------------+--------------------------------------------+
@@ -251,3 +251,10 @@ Feature Roadmap
 - Automatic importing of decorated callables from packages
 - Shell scripts for testing Lambda locally
 - Class for creating fan outs
+- BETWEEN keyword
+- contains(PATH | VALUE, PATH | VALUE) function
+- startswith(PATH, VALUE) function
+- endswith(PATH, VALUE) function
+- from_json(PATH) function
+- NOT keyword
+- bitwise operators for binary types
