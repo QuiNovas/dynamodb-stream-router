@@ -32,7 +32,7 @@ item = {
     }
 }
 
-items = [deepcopy(item) for _ in range(100)]
+items = [deepcopy(item) for _ in range(200)]
 # exp = HasChanged(["types", "source", "target"]) & New().type.eq("Edge")
 # exp = HasChanged(["source", "target"]) & Old("target").get("foo").is_type(str)
 # exp = HasChanged(["source", "target"]) & Old("target")["bar"][0].is_type(str) & New("target").get("bazz").as_bool().invert()
@@ -51,7 +51,7 @@ def func_name(item):
 
 """
 
-for _ in range(1000):
+for _ in range(100):
     exec(func_str.replace("func_name", "a" + str(uuid4()).replace("-", "_")))
 
 
