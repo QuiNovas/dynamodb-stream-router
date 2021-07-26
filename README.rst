@@ -106,77 +106,58 @@ conditional_expression argument that decides whether or not the route matches. T
         * The string uses the query language defined below
 
 
-Condition query language:
-========================
+Condition query language
+-------------------------
 
-    * - Type
-        - Description
-        - Example
-    * - VALUE
-        - A quoted string (single or double), integer, or float representing a literal value
-        - 'foo'
-    * - $OLD
-        - A reference to StreamRecord.OldImage
-        - $OLD.foo
-    * - $NEW
-        - A reference to StreamRecord.NewImage
-        - $NEW.bar
-    * - PATH
-        - A path inside of a StreamRecord. Paths always start with $OLD or $NEW
-        - $OLD.foo.bar or $OLD["foo"]["bar"] or $NEW.foo[0]
-    * - INDEX
-        - A numeric index into a PATH where PATH is a List
-        - $OLD.foo[0]
-    * - Key
-        - A python-style key reference within a PATH
-        - $OLD["foo"]
+Keywords:
+*********
 
-
-+-------+-------------------------------------------------------+-------------------------------------+
-|  Type |                      Description                      |               Example               |
-+-------+-------------------------------------------------------+-------------------------------------+
-| VALUE | A quoted string (single or double quote), integer, or | 'foo', 1, 3.8                       |
-|       | float representing a literal value                    |                                     |
-+-------+-------------------------------------------------------+-------------------------------------+
-| $OLD  | A reference to StreamRecord.OldImage                  | $OLD.foo                            |
-+-------+-------------------------------------------------------+-------------------------------------+
-| $NEW  | A reference to StreamRecord.NewImage                  | $NEW.foo                            |
-+-------+-------------------------------------------------------+-------------------------------------+
-| PATH  | A path starting from a root of $OLD or $NEW.          | $OLD.foo, $NEW.foo.bar, $OLD["foo"] |
-|       | Can be specified using dot syntax or python           |                                     |
-|       | style keys. When using dot reference paths must       |                                     |
-|       | conform to python's restrictions                      |                                     |
-+-------+-------------------------------------------------------+-------------------------------------+
-|       |                                                       |                                     |
-+-------+-------------------------------------------------------+-------------------------------------+
++----------+-------------------------------------------------------+-------------------------------------+
+| **Type** |                    **Description**                    |             **Example**             |
++----------+-------------------------------------------------------+-------------------------------------+
+| VALUE    | A quoted string (single or double quote), integer, or | 'foo', 1, 3.8                       |
+|          | float representing a literal value                    |                                     |
++----------+-------------------------------------------------------+-------------------------------------+
+| $OLD     | A reference to StreamRecord.OldImage                  | $OLD.foo                            |
++----------+-------------------------------------------------------+-------------------------------------+
+| $NEW     | A reference to StreamRecord.NewImage                  | $NEW.foo                            |
++----------+-------------------------------------------------------+-------------------------------------+
+| PATH     | A path starting from a root of $OLD or $NEW.          | $OLD.foo, $NEW.foo.bar, $OLD["foo"] |
+|          | Can be specified using dot syntax or python           |                                     |
+|          | style keys. When using dot reference paths must       |                                     |
+|          | conform to python's restrictions                      |                                     |
++----------+-------------------------------------------------------+-------------------------------------+
+| INDEX    | An integer used as an index into a list or set        | $OLD.foo[0]                         |
++----------+-------------------------------------------------------+-------------------------------------+
 
 
-.. list-table:: Operators
-    :widths: 10 25
-    :header-rows: 1
+Operators:
+**********
 
-    * - Operator
-        - Action
-    * - &
-        - Logical AND
-    * - \|
-        - Logical OR
-    * - ()
-        - Grouping of expressions
-    * - ==
-        - Equality
-    * - !=
-        - Non equality
-    * - >
-        - Greater than
-    * - >=
-        - Greater than or equal to
-    * - <
-        - Less than
-    * - <=
-        - Less than or equal to
-    * - =~
-        - Regex comparison <value> =~ <regex>
++------------+--------------------------------------------+
+| **Symbol** |                 **Action**                 |
++------------+--------------------------------------------+
+| &          | Logical AND                                |
++------------+--------------------------------------------+
+| |          | Logical OR                                 |
++------------+--------------------------------------------+
+| ()         | Grouping                                   |
++------------+--------------------------------------------+
+| ==         | Equality                                   |
++------------+--------------------------------------------+
+| !=         | Non equality                               |
++------------+--------------------------------------------+
+| >          | Greater than                               |
++------------+--------------------------------------------+
+| >=         | Greater than or equal to                   |
++------------+--------------------------------------------+
+| <          | Less than                                  |
++------------+--------------------------------------------+
+| <=         | Less than or equal to                      |
++------------+--------------------------------------------+
+| =~         | Regex comparison <value> =~ '<expression>' |
+|            | `'<expression>' is a quoted VALUE          |
++------------+--------------------------------------------+
 
 
 Comparison operators, except for regex comparison, can compare PATH to VALUE, PATH to PATH, or even VALUE to VALUE.
