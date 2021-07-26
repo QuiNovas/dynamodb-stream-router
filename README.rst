@@ -107,10 +107,7 @@ conditional_expression argument that decides whether or not the route matches. T
 
 
 Condition query language:
-
-.. list-table:: Identifiers
-    :widths: 10 25 25
-    :header-rows: 1
+========================
 
     * - Type
         - Description
@@ -133,6 +130,25 @@ Condition query language:
     * - Key
         - A python-style key reference within a PATH
         - $OLD["foo"]
+
+
++-------+-------------------------------------------------------+-------------------------------------+
+|  Type |                      Description                      |               Example               |
++-------+-------------------------------------------------------+-------------------------------------+
+| VALUE | A quoted string (single or double quote), integer, or | 'foo', 1, 3.8                       |
+|       | float representing a literal value                    |                                     |
++-------+-------------------------------------------------------+-------------------------------------+
+| $OLD  | A reference to StreamRecord.OldImage                  | $OLD.foo                            |
++-------+-------------------------------------------------------+-------------------------------------+
+| $NEW  | A reference to StreamRecord.NewImage                  | $NEW.foo                            |
++-------+-------------------------------------------------------+-------------------------------------+
+| PATH  | A path starting from a root of $OLD or $NEW.          | $OLD.foo, $NEW.foo.bar, $OLD["foo"] |
+|       | Can be specified using dot syntax or python           |                                     |
+|       | style keys. When using dot reference paths must       |                                     |
+|       | conform to python's restrictions                      |                                     |
++-------+-------------------------------------------------------+-------------------------------------+
+|       |                                                       |                                     |
++-------+-------------------------------------------------------+-------------------------------------+
 
 
 .. list-table:: Operators
