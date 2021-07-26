@@ -139,7 +139,7 @@ Operators:
 +------------+--------------------------------------------+
 | &          | Logical AND                                |
 +------------+--------------------------------------------+
-| |          | Logical OR                                 |
+| \|          | Logical OR                                 |
 +------------+--------------------------------------------+
 | ()         | Grouping                                   |
 +------------+--------------------------------------------+
@@ -163,19 +163,80 @@ Operators:
 Comparison operators, except for regex comparison, can compare PATH to VALUE, PATH to PATH, or even VALUE to VALUE.
 
 
-.. list-table:: Functions
-    :widths: 20 20 50
-    :header-rows: 1
++---------------------------+--------------------------------------------------------+------------------------------------------------------------------------------------+
+|          **Name**         |                      **Arguments**                     | **Description**                                                                    |
++---------------------------+--------------------------------------------------------+------------------------------------------------------------------------------------+
+| has_changed(VALUE, VALUE) | VALUE - Comma separated list of quoted values          | Tests $OLD and $NEW. If value is in one and not the other, or in both and differs, |
+|                           |                                                        | the the function will return True. Returns True if any key meets conditions.       |
++---------------------------+--------------------------------------------------------+------------------------------------------------------------------------------------+
+| is_type(PATH, TYPE)       |  - PATH - The path to test in the form of $OLD.foo.bar | Tests if PATH exists and the VALUE at PATH is of type TYPE.                        |
+|                           |  - TYPE - A Dynamodb type. Can be one of S, SS, B, BS, |                                                                                    |
+|                           |    N, NS, L, M, or BOOL                                |                                                                                    |
++---------------------------+--------------------------------------------------------+------------------------------------------------------------------------------------+
+| attribute_exists(PATH)    | PATH - The path to test                                | Returns True if the provided path exists                                           |
++---------------------------+--------------------------------------------------------+------------------------------------------------------------------------------------+
 
-    * - Name
-        - Arguments
-        - Description
-    * - has_changed(VALUE, VALUE)
-        - Comma-separated list of quoted values
-        - Tests each value to see if that key in the top level of $OLD differs from $NEW. Returns True if any of the elements have changed
-    * - is_type(PATH, TYPE)
-        - PATH - The path to a value to test and the Dynamodb type to test for, TYPE - Any Dynamodb Type
-        - Returns if PATH is of type TYPE. TYPE can be any unquoted Dynamodb type (S, SS, B, BS, N, NS, M, BOOL, L)
-    * - attribute_exists(PATH)
-        - PATH - An element to test the existence of
-        - Returns a bool indicating if the specified key/index exists in PATH
+
+Example testing an expression directly:
+***************************************
+
+.. highlight:: python
+.. code-block:: python
+
+    from dynamodb_stream_parser.conditions.parser import Expression
+    from dynamodb_stream_router.router import StreamRouter, Record
+
+
+    router = StreamRouter(threaded=True)
+
+    item = {
+        "StreamViewType": "NEW_AND_OLD_IMAGES",
+        "eventName": "UPDATE",
+        "dynamodb": {
+            "OldImage": {
+                "type": {
+                    "M": {
+                        "foo": {
+                            "M": {
+                                "bar": {
+                                    "L": [
+                                        {"S": "baz"}
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "NewImage": {
+                "type": {"S": "sometype"}
+            }
+        }
+    }
+
+    parser = Expression()
+    exp = "$NEW.type == 'sometype' & has_changed('type')"
+    res = exp.evaluate(exp, record=Record(item))
+    print(exp.evaluate())
+    # Prints 'True'
+
+
+    ''' Using an expression with StreamRouter '''
+    from dynamodb_stream_parser.conditions.parser import Expression
+    from dynamodb_stream_router.router import StreamRouter, Record
+
+    router = StreamRouter()
+    exp = "$NEW.type == 'sometype' & has_changed('type')
+
+
+    @router.update(condition_expression=exp)
+    def func_name(item):
+        return 1
+
+
+    records = [StreamRecord(item)]
+
+    res = router.resolve_all(items)
+    print([x.value for x in res])
+
+    # prints '[1]'
