@@ -13,7 +13,7 @@ Features:
     - Route return values include all the information about the execution of that route for debugging
 
 
-Full documentation available at https://quinovas.github.io/dynamodb-stream-router
+Full API documentation available at https://quinovas.github.io/dynamodb-stream-router
 
 Example Usage:
 
