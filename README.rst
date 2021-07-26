@@ -158,7 +158,7 @@ Operators:
 | <=         | Less than or equal to                      |
 +------------+--------------------------------------------+
 | =~         | Regex comparison <PATH> =~ '<expression>'  |
-|            | where `'<expression>'` is a quoted VALUE   |
+|            | where *'<expression>'* is a quoted VALUE   |
 +------------+--------------------------------------------+
 
 
