@@ -9,13 +9,14 @@ Features:
     - Register functions/methods using decorators
     - Assign functions/methods to be called for specific db operations
     - Filter routes to call on a record using a conditional expression or custom function
-    - Conditional expressions are parsed using a custom grammar lexer/parser writtern with `sly`, so they are really, really fast
+    - Conditional expressions are parsed using a custom grammar lexer/parser written with `sly`, so they are really, really fast
     - Route return values include all the information about the execution of that route for debugging
 
 
 Full API documentation available at https://quinovas.github.io/dynamodb-stream-router
 
 Example Usage:
+**************
 
 .. highlight:: python
 .. code-block:: python
@@ -96,6 +97,7 @@ Expressions
 
 Routes can be registered to be called either for all records whose operation matches the record (UPDATE, DELETE, INSERT) or include a
 conditional_expression argument that decides whether or not the route matches. There are two types of condition_expression:
+
     - Callable:
         * Any function/method/lambda that returns a bool
         * The record currently being parsed is passed as the first and only argument
