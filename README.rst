@@ -98,14 +98,14 @@ Expressions
 Routes can be registered to be called either for all records whose operation matches the record (UPDATE, DELETE, INSERT) or include a
 conditional_expression argument that decides whether or not the route matches. There are two types of condition_expression:
 
-    - Callable:
-        * Any function/method/lambda that returns a bool
-        * The record currently being parsed is passed as the first and only argument
-        * The record is passed as a dynamodb_stream_router.router.Record object
-        * If the function returns True then the route's function will be called
-    - Expression (dynamodb_stream_router.conditions.parser.Expression)
-        * A string that will be parsed into a callable using dynamodb_stream_router.conditions.parser.Expression
-        * The string uses the query language defined below
+- Callable:
+    * Any function/method/lambda that returns a bool
+    * The record currently being parsed is passed as the first and only argument
+    * The record is passed as a dynamodb_stream_router.router.Record object
+    * If the function returns True then the route's function will be called
+- Expression (dynamodb_stream_router.conditions.parser.Expression)
+    * A string that will be parsed into a callable using dynamodb_stream_router.conditions.parser.Expression
+    * The string uses the query language defined below
 
 
 Condition query language
