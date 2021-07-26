@@ -1,9 +1,9 @@
-dynamodb-stream-router
-======================
+dynamodb-stream-router  (Alpha release)
+=======================================
 
 
-Provies a router framework for mapping records in a Dynamodb stream to callables based on the event name (UPDATE, INSERT, DELETE) and/or content
--------------------------------------------------------------------------------------------------------------------------------------------------
+Provies a framework for mapping records in a Dynamodb stream to callables based on the event name (UPDATE, INSERT, DELETE) and content
+---------------------------------------------------------------------------------------------------------------------------------------
 
 Features:
     - Register functions/methods using decorators
@@ -242,3 +242,12 @@ Example testing an expression directly:
     print([x.value for x in res])
 
     # prints '[1]'
+
+
+Feature Roadmap
+---------------
+
+- Pre/post hooks
+- Automatic importing of decorated callables from packages
+- Shell scripts for testing Lambda locally
+- Class for creating fan outs
