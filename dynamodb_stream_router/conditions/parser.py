@@ -65,7 +65,7 @@ class Expression(Parser):
 
     Used to build an expression from a string that, when passed to the evaluation method, will return a bool
     by executing the statements in the expression against a `dynamodb_stream_router.router.StreamRecord`_.
-    Example  of testing an expression directly:
+    Example of testing an expression directly:
 
     .. highlight:: python
     .. code-block:: python

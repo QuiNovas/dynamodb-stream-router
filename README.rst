@@ -56,6 +56,11 @@ Example Usage:
 
 
     res = router.resolve_all(records)
+    print([
+        x.value for x in res
+    ])
+
+    # prints '[True]'
 
 
 In the example above the function *my_first_route()* will be called because *record.OldImage["type"]* has changed in comparison to *record.NewImage["type"].
@@ -79,5 +84,101 @@ Example using a lambda as condition_expression:
 
 
     res = router.resolve_all(records)
+    print([
+        x.value for x in res
+    ])
+
+    # prints '[True]'
 
 
+Expressions
+-----------
+
+Routes can be registered to be called either for all records whose operation matches the record (UPDATE, DELETE, INSERT) or include a
+conditional_expression argument that decides whether or not the route matches. There are two types of condition_expression:
+    - Callable:
+        * Any function/method/lambda that returns a bool
+        * The record currently being parsed is passed as the first and only argument
+        * The record is passed as a dynamodb_stream_router.router.Record object
+        * If the function returns True then the route's function will be called
+    - Expression (dynamodb_stream_router.conditions.parser.Expression)
+        * A string that will be parsed into a callable using dynamodb_stream_router.conditions.parser.Expression
+        * The string uses the query language defined below
+
+
+Condition query language:
+
+.. list-table:: Identifiers
+    :widths: 10 25 25
+    :header-rows: 1
+
+    * - Type
+        - Description
+        - Example
+    * - VALUE
+        - A quoted string (single or double), integer, or float representing a literal value
+        - 'foo'
+    * - $OLD
+        - A reference to StreamRecord.OldImage
+        - $OLD.foo
+    * - $NEW
+        - A reference to StreamRecord.NewImage
+        - $NEW.bar
+    * - PATH
+        - A path inside of a StreamRecord. Paths always start with $OLD or $NEW
+        - $OLD.foo.bar or $OLD["foo"]["bar"] or $NEW.foo[0]
+    * - INDEX
+        - A numeric index into a PATH where PATH is a List
+        - $OLD.foo[0]
+    * - Key
+        - A python-style key reference within a PATH
+        - $OLD["foo"]
+
+
+.. list-table:: Operators
+    :widths: 10 25
+    :header-rows: 1
+
+    * - Operator
+        - Action
+    * - &
+        - Logical AND
+    * - \|
+        - Logical OR
+    * - ()
+        - Grouping of expressions
+    * - ==
+        - Equality
+    * - !=
+        - Non equality
+    * - >
+        - Greater than
+    * - >=
+        - Greater than or equal to
+    * - <
+        - Less than
+    * - <=
+        - Less than or equal to
+    * - =~
+        - Regex comparison <value> =~ <regex>
+
+
+Comparison operators, except for regex comparison, can compare PATH to VALUE, PATH to PATH, or even VALUE to VALUE.
+
+
+.. list-table:: Functions
+    :widths: 20 20 50
+    :header-rows: 1
+
+    * - Name
+        - Arguments
+        - Description
+    * - has_changed(VALUE, VALUE)
+        - Comma-separated list of quoted values
+        - Tests each value to see if that key in the top level of $OLD differs from $NEW. Returns True if any of the elements have changed
+    * - is_type(PATH, TYPE)
+        - PATH - The path to a value to test and the Dynamodb type to test for, TYPE - Any Dynamodb Type
+        - Returns if PATH is of type TYPE. TYPE can be any unquoted Dynamodb type (S, SS, B, BS, N, NS, M, BOOL, L)
+    * - attribute_exists(PATH)
+        - PATH - An element to test the existence of
+        - Returns a bool indicating if the specified key/index exists in PATH
