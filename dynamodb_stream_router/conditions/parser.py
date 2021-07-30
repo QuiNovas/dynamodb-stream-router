@@ -518,6 +518,14 @@ class Expression(Parser):
         INT = int(o.INT)
         return lambda m: INT
 
+    @_("TRUE")  # noqa: 821
+    def operand(self, o):  # noqa: 811
+        return lambda m: True
+
+    @_("FALSE")  # noqa: 821
+    def operand(self, o):  # noqa: 811
+        return lambda m: False
+
     @_("FLOAT")  # noqa: 821
     def path(self, p):  # noqa: 811
         FLOAT = float(p.FLOAT)

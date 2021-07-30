@@ -31,7 +31,9 @@ class ExpressionLexer(Lexer):
         NEW_IMAGE,
         CHANGED,
         MATCH,
-        IS_TYPE
+        IS_TYPE,
+        FALSE,
+        TRUE
     }
 
     # Set of literal characters
@@ -67,6 +69,8 @@ class ExpressionLexer(Lexer):
     INT = r"\d+"
     FLOAT = r"\d+\.\d+"
     MATCH = r"=~"
+    TRUE = 'True'
+    FALSE = 'False'
 
     # Line number tracking
     @_(r"\n+")

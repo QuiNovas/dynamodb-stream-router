@@ -27,7 +27,7 @@ item = {
             }
         },
         "NewImage": {
-            "type": {"S": "Edge"}
+            "type": {"S": "Edge"},
         }
     }
 }
