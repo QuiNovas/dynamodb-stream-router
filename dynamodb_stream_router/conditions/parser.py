@@ -210,6 +210,17 @@ class Expression(Parser):
 
     _expression_cache = {}
 
+    # Get the token list from the lexer (required)
+    tokens = ExpressionLexer.tokens
+
+    # Define precendence
+    precedence = (
+        ("left", OR),  # noqa: 821
+        ("left", AND),  # noqa: 821
+        ("right", NOT),  # noqa: 821
+        ("nonassoc", EQ, NE, GT, LT, LTE, GTE),  # noqa: 821
+    )
+
     def __init__(self, record: StreamRecord = None):
         self.__record = None
         self.__old_image = None
@@ -320,16 +331,6 @@ class Expression(Parser):
         self.__old_keys = list(record.OldImage.keys())
         self.__new_keys = list(record.NewImage.keys())
         self.__record = record
-
-    # Get the token list from the lexer (required)
-    tokens = ExpressionLexer.tokens
-
-    # Define precendence
-    precendence = (
-        ("left", OR),  # noqa: 821
-        ("left", AND),  # noqa: 821
-        ("right", NOT),  # noqa: 821
-    )
 
     # Grammar rules and actions
     @_("operand EQ operand")  # noqa: 821
