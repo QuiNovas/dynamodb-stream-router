@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.8
-from dynamodb_stream_router.router import StreamRouter
+from dynamodb_stream_router.router import StreamRouter, StreamRecord
 
 from time import time
 
@@ -110,14 +110,14 @@ records = [{
 
 
 
-@router.update(condition_expression="NOT ($NEW.system == True & $OLD.system == True)")
+@router.update(condition_expression="$NEW.system == False & $OLD.system == True")
 def delete_tenant(record):
-    print(f"TENANT MARKED FOR REMOVAL: {record.NewImage}")
+    print(record._asdict())
 
 
 def handler():
     start = time()
-    res = router.resolve_all(records)
+    res = router.resolve_all([StreamRecord(x)._asdict() for x in records])
     print(time() - start)
     print([
         x.value for x in res

@@ -33,8 +33,7 @@ class ExpressionLexer(Lexer):
         MATCH,
         IS_TYPE,
         FALSE,
-        TRUE,
-        IS
+        TRUE
     }
 
     # Set of literal characters
@@ -51,7 +50,6 @@ class ExpressionLexer(Lexer):
     OR = r"\|"
     NOT = "NOT"
     IN = "IN"
-    IS = "IS"
     BETWEEN = "BETWEEN"
     CHANGED = "has_changed"
     IS_TYPE = "is_type"
