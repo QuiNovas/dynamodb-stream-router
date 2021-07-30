@@ -2,6 +2,7 @@
 # pyright: reportUndefinedVariable=false
 from typing import TYPE_CHECKING
 from sly import Parser
+from sly.yacc import YaccProduction
 from .lexer import ExpressionLexer
 from re import match
 from typing import Callable
@@ -402,6 +403,10 @@ class Expression(Parser):
         condition = p.condition
         return lambda m: not condition(m)
 
+    @_("NOT path")  # noqa: 821
+    def condition(self, p):  # noqa: 811
+        return lambda m: not p.path(m)
+
     @_('"(" condition ")"')  # noqa: 821
     def condition(self, p):  # noqa: 811
         condition = p.condition
@@ -546,6 +551,8 @@ class Expression(Parser):
     @_("NAME")  # noqa: 821
     def path(self, p):  # noqa: 811
         NAME = p.NAME
+        if isinstance(p, YaccProduction):
+            raise ValueError(f"Unknown keyword {p.NAME}")
         return lambda m: m.get(NAME) if p(m) is not None else None
 
     @_('CHANGED "(" in_list ")"')  # noqa: 821

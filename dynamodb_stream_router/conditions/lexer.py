@@ -33,7 +33,8 @@ class ExpressionLexer(Lexer):
         MATCH,
         IS_TYPE,
         FALSE,
-        TRUE
+        TRUE,
+        IS
     }
 
     # Set of literal characters
@@ -46,12 +47,13 @@ class ExpressionLexer(Lexer):
     OLD_IMAGE = r"\$OLD"
     NEW_IMAGE = r"\$NEW"
     VALUE = r""""([^"\\]*(\\.[^"\\]*)*)"|\'([^\'\\]*(\\.[^\'\\]*)*)\'"""
-    BETWEEN = "BETWEEN"
-    CHANGED = "has_changed"
     AND = r"\&"
     OR = r"\|"
     NOT = "NOT"
     IN = "IN"
+    IS = "IS"
+    BETWEEN = "BETWEEN"
+    CHANGED = "has_changed"
     IS_TYPE = "is_type"
     ATTRIBUTE_EXISTS = r"attribute_exists"
     ATTRIBUTE_NOT_EXISTS = r"attribute_not_exists"
@@ -59,7 +61,14 @@ class ExpressionLexer(Lexer):
     BEGINS_WITH = r"begins_with"
     CONTAINS = r"contains"
     SIZE = r"size"
-    NAME = r"[a-zA-Z][a-zA-Z0-9\-_]*"
+    TRUE = "True"
+    FALSE = "False"
+
+    """
+    NAME has to come AFTER any keywords above. NAME is used as a path within OLD_IMAGE/NEW_IMAGE
+    and also Dynamodb types such as S, L, SS, NS, BOOL, etc...
+    """
+    NAME = r"[a-zA-Z_][a-zA-Z0-9\-_]*"
     NE = r"!="
     GTE = r">="
     LTE = r"<="
@@ -67,10 +76,8 @@ class ExpressionLexer(Lexer):
     GT = r">"
     LT = r"<"
     INT = r"\d+"
-    FLOAT = r"\d+\.\d+"
     MATCH = r"=~"
-    TRUE = 'True'
-    FALSE = 'False'
+    FLOAT = r"\d+\.\d+"
 
     # Line number tracking
     @_(r"\n+")

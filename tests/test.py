@@ -6,6 +6,8 @@ from time import time
 
 router = StreamRouter()
 
+
+# flake8: noqa
 records = [{
     'eventID': 'cc7afaec1a119f8e7accf2fd46a83fa5',
   		'eventName': 'MODIFY',
@@ -108,7 +110,7 @@ records = [{
 
 
 
-@router.update(condition_expression="$NEW.sk =~ 'TENANT.*' & attribute_exists($NEW.region)")
+@router.update(condition_expression="NOT ($NEW.system == True & $OLD.system == True)")
 def delete_tenant(record):
     print(f"TENANT MARKED FOR REMOVAL: {record.NewImage}")
 
