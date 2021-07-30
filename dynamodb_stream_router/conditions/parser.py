@@ -3,10 +3,13 @@
 from typing import TYPE_CHECKING
 from sly import Parser
 from sly.yacc import YaccProduction
-from .lexer import ExpressionLexer
 from re import match
 from typing import Callable
-
+from .lexer import ExpressionLexer
+from ..exceptions import (
+    SyntaxError,
+    KeywordError
+)
 
 if TYPE_CHECKING:
     from ..router import StreamRecord
@@ -252,7 +255,11 @@ class Expression(Parser):
         if callable(expression):
             return expression(record or self.record)
         else:
-            return self.parse(expression)(record or self.record)
+            try:
+                return self.parse(expression)(record or self.record)
+            except TypeError as e:
+                if str(e) == "'NoneType' object is not callable":
+                    raise SyntaxError("Illegal condition statement")
 
     def parse(self, expression: str) -> Callable:
         """
@@ -488,10 +495,6 @@ class Expression(Parser):
     def condition(self, f):  # noqa: 811
         regex = f.operand1
         str_to_match = f.operand0
-        # print(str_to_match)
-        # print(type(str_to_match))
-        # exit()
-
         return lambda x: bool(match(regex(x), str_to_match(x)))
 
     @_('path "." NAME')  # noqa: 821
@@ -553,7 +556,7 @@ class Expression(Parser):
     def path(self, p):  # noqa: 811
         NAME = p.NAME
         if isinstance(p, YaccProduction):
-            raise ValueError(f"Unknown keyword {p.NAME}")
+            raise KeywordError(f"Unknown keyword {p.NAME}")
         return lambda m: m.get(NAME) if p(m) is not None else None
 
     @_('CHANGED "(" in_list ")"')  # noqa: 821
@@ -600,3 +603,8 @@ class Expression(Parser):
             raise TypeError(f"Unknown type '{p.NAME}'")
 
         return TYPE_MAP[p.NAME]
+
+
+    @_('condition error')  # noqa: 821
+    def operand(self, x):  # noqa: 811
+        raise SyntaxError(f"Unexpected token '{x.error.value}'")

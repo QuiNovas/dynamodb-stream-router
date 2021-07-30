@@ -110,7 +110,7 @@ records = [{
 
 
 
-@router.update(condition_expression="$NEW.system == False & $OLD.system == True")
+@router.update(condition_expression="$FOO.bar == 'bar'")
 def delete_tenant(record):
     print(record._asdict())
 

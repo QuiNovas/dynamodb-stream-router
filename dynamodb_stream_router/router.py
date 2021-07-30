@@ -12,7 +12,7 @@ from typing import (
     Any,
 )
 from .conditions.parser import Expression
-
+from .exceptions import ConditionError
 
 if not environ.get("TYPECHECKED"):
     typeguard.typechecked = lambda: True
@@ -548,13 +548,13 @@ class StreamRouter:
                             route.condition_expression, record=record
                         )
                     except Exception as e:
-                        raise ValueError(
+                        raise ConditionError(
                             f"Could not parse {route.condition_expression}: {e}") from e
                 else:
                     try:
                         test = route.condition_expression(record)
                     except Exception as e:
-                        raise ValueError(f"Could not parse expression using {route.condition_expression}") from e
+                        raise ConditionError(f"Could not parse expression using {route.condition_expression}") from e
 
                 if test:
                     routes_to_call.append(route)
