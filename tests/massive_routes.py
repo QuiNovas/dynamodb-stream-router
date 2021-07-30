@@ -9,7 +9,7 @@ router = StreamRouter(threaded=True)
 
 item = {
     "StreamViewType": "NEW_AND_OLD_IMAGES",
-    "eventName": "UPDATE",
+    "eventName": "MODIFY",
     "dynamodb": {
         "OldImage": {
             "type": {
@@ -32,7 +32,7 @@ item = {
     }
 }
 
-items = [deepcopy(item) for _ in range(200)]
+items = [deepcopy(item) for _ in range(1)]
 # exp = HasChanged(["types", "source", "target"]) & New().type.eq("Edge")
 # exp = HasChanged(["source", "target"]) & Old("target").get("foo").is_type(str)
 # exp = HasChanged(["source", "target"]) & Old("target")["bar"][0].is_type(str) & New("target").get("bazz").as_bool().invert()

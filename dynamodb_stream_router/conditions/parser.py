@@ -78,7 +78,7 @@ class Expression(Parser):
 
         item = {
             "StreamViewType": "NEW_AND_OLD_IMAGES",
-            "eventName": "UPDATE",
+            "eventName": "MODIFY",
             "dynamodb": {
                 "OldImage": {
                     "type": {
@@ -479,10 +479,14 @@ class Expression(Parser):
         return lambda m: self._strip_quotes(VALUE)
 
     @_('operand MATCH operand')  # noqa: 821
-    def function(self, f):  # noqa: 811
-        regex = f.operand1(f)
-        str_to_match = f.operand0(f)
-        return lambda x: bool(match(regex, str_to_match))
+    def condition(self, f):  # noqa: 811
+        regex = f.operand1
+        str_to_match = f.operand0
+        # print(str_to_match)
+        # print(type(str_to_match))
+        # exit()
+
+        return lambda x: bool(match(regex(x), str_to_match(x)))
 
     @_('path "." NAME')  # noqa: 821
     def path(self, p):  # noqa: 811

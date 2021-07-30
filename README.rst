@@ -2,7 +2,7 @@ dynamodb-stream-router  (Alpha release)
 =======================================
 
 
-Provies a framework for mapping records in a Dynamodb stream to callables based on the event name (UPDATE, INSERT, DELETE) and content
+Provies a framework for mapping records in a Dynamodb stream to callables based on the event name (MODIFY, INSERT, DELETE) and content
 ---------------------------------------------------------------------------------------------------------------------------------------
 
 Features:
@@ -27,7 +27,7 @@ Example Usage:
 
     records = [{
         "StreamViewType": "NEW_AND_OLD_IMAGES",  # Only NEW_AND_OLD_IMAGES are supported
-        "eventName": "UPDATE",
+        "eventName": "MODIFY",
         "dynamodb": {
             "OldImage": {
                 "type": {
@@ -95,7 +95,7 @@ Example using a lambda as condition_expression:
 Expressions
 -----------
 
-Routes can be registered to be called either for all records whose operation matches the record (UPDATE, DELETE, INSERT) or include a
+Routes can be registered to be called either for all records whose operation matches the record (MODIFY, DELETE, INSERT) or include a
 conditional_expression argument that decides whether or not the route matches. There are two types of condition_expression:
 
 - Callable:
@@ -193,7 +193,7 @@ Example testing an expression directly:
 
     item = {
         "StreamViewType": "NEW_AND_OLD_IMAGES",
-        "eventName": "UPDATE",
+        "eventName": "MODIFY",
         "dynamodb": {
             "OldImage": {
                 "type": {

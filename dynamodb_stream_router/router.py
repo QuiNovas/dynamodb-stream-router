@@ -26,7 +26,7 @@ class Image(Enum):
 class Operations(Enum):
     REMOVE = auto()
     INSERT = auto()
-    UPDATE = auto()
+    MODIFY = auto()
 
 
 class StreamViewType(Enum):
@@ -49,7 +49,7 @@ class Route(NamedTuple):
     """
     #: The Callable that will be triggered if this route is a match for a record
     callable: Callable
-    #: The operations that this route is registered for (UPDATE | INSERT | DELETE)
+    #: The operations that this route is registered for (MODIFY | INSERT | DELETE)
     operations: List[Operations]
     #: Optional `dynamodb_stream_router.conditions.Expression`_ string or Callable to be used for route matching
     condition_expression: Union[Callable, str] = None
@@ -86,7 +86,7 @@ class StreamRecord(
 
 
     :properties:
-        * *eventName:* (``str``): UPDATE | INSERT | DELETE
+        * *eventName:* (``str``): MODIFY | INSERT | DELETE
         * *StreamViewType:* (``str``): NEW_AND_OLD_IMAGES is the only one we support. Any other will cause an exception
         * *awsRegion:* (``str``)
         * *eventID:* (``str``)
@@ -166,7 +166,7 @@ class Result(NamedTuple):
 class RouteSet(NamedTuple):
     REMOVE: List[Route]
     INSERT: List[Route]
-    UPDATE: List[Route]
+    MODIFY: List[Route]
 
 
 class StreamRouter:
@@ -188,7 +188,7 @@ class StreamRouter:
 
         records = [{
             "StreamViewType": "NEW_AND_OLD_IMAGES",  # Only NEW_AND_OLD_IMAGES are supported
-            "eventName": "UPDATE",
+            "eventName": "MODIFY",
             "dynamodb": {
                 "OldImage": {
                     "type": {
@@ -284,7 +284,7 @@ class StreamRouter:
         """
 
         #: A list of dynamodb_stream_router.Route that are registered to the router
-        self.routes: RouteSet = RouteSet(**{"REMOVE": [], "INSERT": [], "UPDATE": []})
+        self.routes: RouteSet = RouteSet(**{"REMOVE": [], "INSERT": [], "MODIFY": []})
         self.format_record = True
         self._condition_parser = Expression()
 
@@ -292,7 +292,7 @@ class StreamRouter:
         """
         .. _dynamodb_stream_router.router.StreamRouter.update:
 
-        Wrapper for StreamRouter.route(). Creates a route for "UPDATE" operation, taking an optional condition_expression
+        Wrapper for StreamRouter.route(). Creates a route for "MODIFY" operation, taking an optional condition_expression
 
         :Keyword Arguments:
             * *condition_expression:* (``Union[Callable, str]``): An expression that returns a boolean indicating if
@@ -315,7 +315,7 @@ class StreamRouter:
                 pass
 
         """
-        return self.route("UPDATE", **kwargs)
+        return self.route("MODIFY", **kwargs)
 
     def remove(self, **kwargs) -> Callable:
         """
@@ -390,7 +390,7 @@ class StreamRouter:
 
         :Keyword Arguments:
             * *operations:* (``Union[str, List[str]``): A Dynamodb operation or list of operations. Can be one or
-              more of 'REMOVE | INSERT | UPDATE'
+              more of 'REMOVE | INSERT | MODIFY'
             * *condition_expression:* (``Union[Callable, str]``): An expression that returns a boolean indicating if
               the route should be called for a particular record. If type is ``str`` then the expression will be parsed using
               `dynamodb_stream_router.conditions.Expression`_ *parse()*  to generate the callable
@@ -406,7 +406,7 @@ class StreamRouter:
             from dynamodb_stream_router.router import StreamRouter
 
 
-            @router.route(["UPDATE", "INSERT", "DELETE"], condition_expression="has_changed('foo')")
+            @router.route(["MODIFY", "INSERT", "DELETE"], condition_expression="has_changed('foo')")
             def process_foo_any(record):
                 pass
 
@@ -429,7 +429,7 @@ class StreamRouter:
         for op in operations:
             if op not in known_operations:
                 raise TypeError(
-                    "Supported operations are 'REMOVE', 'INSERT', and 'UPDATE'"
+                    "Supported operations are 'REMOVE', 'INSERT', and 'MODIFY'"
                 )
 
         def inner(func: Callable) -> Callable:
@@ -549,7 +549,7 @@ class StreamRouter:
                         )
                     except Exception as e:
                         raise ValueError(
-                            f"Could not parse {route.condition_expression}") from e
+                            f"Could not parse {route.condition_expression}: {e}") from e
                 else:
                     try:
                         test = route.condition_expression(record)

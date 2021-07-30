@@ -1,67 +1,121 @@
 #!/usr/bin/env python3.8
-from dynamodb_stream_router.router import StreamRouter, StreamRecord, parse_image
+from dynamodb_stream_router.router import StreamRouter
 
-from dynamodb_stream_router.conditions import (
-    HasChanged,
-    Old,
-    New,
-    IsType
-)
 from time import time
 
 
 router = StreamRouter()
 
-items = [
-    {
-        "StreamViewType": "NEW_AND_OLD_IMAGES",
-        "eventName": "UPDATE",
-        "dynamodb": {
-            "OldImage": {
-                "type": {
-                    "M": {
-                        "foo": {
-                            "M": {
-                                "bar": {
-                                    "L": [
-                                        {"S": "baz"}
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "NewImage": {
-                "type": {"S": "Edge"}
-            }
-        }
-    }
-]
-# exp = HasChanged(["source", "target"]) & Old("target").get("foo").eq("bar")
-# exp = HasChanged(["source", "target"]) & Old("target").get("foo").is_type(str)
-# exp = HasChanged(["source", "target"]) & Old("target")["bar"][0].is_type(str) & New("target").get("bazz").as_bool().invert()
+records = [{
+    'eventID': 'cc7afaec1a119f8e7accf2fd46a83fa5',
+  		'eventName': 'MODIFY',
+  		'eventVersion': '1.1',
+  		'eventSource': 'aws:dynamodb',
+  		'awsRegion': 'us-east-1',
+  		'dynamodb': {
+                    'ApproximateCreationDateTime': 1627664656.0,
+                 			'Keys': {
+                                            'sk': {
+                                                'S': 'TENANT~Mathew Refactor'
+                                            },
+                                            'pk': {
+                                                'S': 'SYSTEM'
+                                            }
+                                        },
+                    'NewImage': {
+                                            'system': {
+                                                'BOOL': True
+                                            },
+                                            'created': {
+                                                'M': {
+                                                    'at': {
+                                                        'S': '2021-06-18T18:32:45.220064'
+                                                    },
+                                                    'by': {
+                                                        'S': 'mmoon@quinovas.com'
+                                                    }
+                                                }
+                                            },
+                                            'name': {
+                                                'S': 'Mathew Refactor'
+                                            },
+                                            'sk': {
+                                                'S': 'TENANT~Mathew Refactor'
+                                            },
+                                            'lastModified': {
+                                                'M': {
+                                                    'at': {
+                                                        'S': '2021-06-18T18:32:45.220064'
+                                                    },
+                                                    'by': {
+                                                        'S': 'mmoon@quinovas.com'
+                                                    }
+                                                }
+                                            },
+                                            'pk': {
+                                                'S': 'SYSTEM'
+                                            },
+                                            'region': {
+                                                'S': 'us-east-1'
+                                            }
+                                        },
+                    'OldImage': {
+                                            'system': {
+                                                'BOOL': True
+                                            },
+                                            'test': {
+                                                'S': 'bar'
+                                            },
+                                            'created': {
+                                                'M': {
+                                                    'at': {
+                                                        'S': '2021-06-18T18:32:45.220064'
+                                                    },
+                                                    'by': {
+                                                        'S': 'mmoon@quinovas.com'
+                                                    }
+                                                }
+                                            },
+                                            'name': {
+                                                'S': 'Mathew Refactor'
+                                            },
+                                            'sk': {
+                                                'S': 'TENANT~Mathew Refactor'
+                                            },
+                                            'lastModified': {
+                                                'M': {
+                                                    'at': {
+                                                        'S': '2021-06-18T18:32:45.220064'
+                                                    },
+                                                    'by': {
+                                                        'S': 'mmoon@quinovas.com'
+                                                    }
+                                                }
+                                            },
+                                            'pk': {
+                                                'S': 'SYSTEM'
+                                            },
+                                            'region': {
+                                                'S': 'us-east-1'
+                                            }
+                                        },
+                    'SequenceNumber': '741245700000000103331120494',
+                 			'SizeBytes': 435,
+                 			'StreamViewType': 'NEW_AND_OLD_IMAGES'
+		},
+    'eventSourceARN': 'arn:aws:dynamodb:us-east-1:066817783078:table/echo-dev-graph/stream/2021-02-25T00:29:50.582'
+}]
 
-exp = IsType(Old("type")["foo"], "M") & Old("type").foo.bar[0].eq("baz")
-print(str(exp))
-record = StreamRecord(items[0])
-test = exp(record)  # Returns a bool by testing exp against a single record
-print(test)
 
 
-@router.update(condition_expression=exp)
-def edge(item):
-    return item
-
-
-@router.update(condition_expression=exp)
-def edge2(item):
-    return item
+@router.update(condition_expression="$NEW.sk =~ 'TENANT.*' & attribute_exists($NEW.region)")
+def delete_tenant(record):
+    print(f"TENANT MARKED FOR REMOVAL: {record.NewImage}")
 
 
 def handler():
     start = time()
-    res = router.resolve_all(items)
+    res = router.resolve_all(records)
     print(time() - start)
     print([
         x.value for x in res
