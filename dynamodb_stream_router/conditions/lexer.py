@@ -27,6 +27,7 @@ class ExpressionLexer(Lexer):
         BEGINS_WITH,
         CONTAINS,
         SIZE,
+        FROM_JSON,
         OLD_IMAGE,
         NEW_IMAGE,
         NAME,
@@ -59,9 +60,10 @@ class ExpressionLexer(Lexer):
     ATTRIBUTE_TYPE = "attribute_type"
     BEGINS_WITH = "begins_with"
     CONTAINS = "contains"
+    FROM_JSON = "from_json"
     SIZE = "size"
     TRUE = "True"
-    FALSE = "False"
+    FALSE = "False",
 
     """
     NAME has to come AFTER any keywords above. NAME is used as a path within OLD_IMAGE/NEW_IMAGE

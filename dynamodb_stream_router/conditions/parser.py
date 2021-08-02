@@ -563,7 +563,7 @@ class Expression(Parser):
             raise KeywordError(f"Unknown keyword {p.NAME}")
         return lambda m: m.get(NAME) if p(m) is not None else None
 
-    @_('from_json "(" path ")" ')  # noqa: 821
+    @_('FROM_JSON "(" path ")" ')  # noqa: 821
     def function(self, p):  # noqa: 811
         return lambda m: loads(p.path(m))
 

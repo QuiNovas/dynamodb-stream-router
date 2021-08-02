@@ -187,7 +187,7 @@ as Route(s).</p>
 
 <span class="n">records</span> <span class="o">=</span> <span class="p">[{</span>
     <span class="s2">&quot;StreamViewType&quot;</span><span class="p">:</span> <span class="s2">&quot;NEW_AND_OLD_IMAGES&quot;</span><span class="p">,</span>  <span class="c1"># Only NEW_AND_OLD_IMAGES are supported</span>
-    <span class="s2">&quot;eventName&quot;</span><span class="p">:</span> <span class="s2">&quot;UPDATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;eventName&quot;</span><span class="p">:</span> <span class="s2">&quot;MODIFY&quot;</span><span class="p">,</span>
     <span class="s2">&quot;dynamodb&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;OldImage&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -248,6 +248,9 @@ indicating whether or not the route matches.</p>
 <li><p><em>condition_expression:</em> (<code class="docutils literal notranslate"><span class="pre">Union[Callable,</span> <span class="pre">str]</span></code>): An expression that returns a boolean indicating if
 the route should be called for a particular record. If type is <code class="docutils literal notranslate"><span class="pre">str</span></code> then the expression will be parsed using
 <a class="reference internal" href="#dynamodb-stream-router-conditions-expression">dynamodb_stream_router.conditions.Expression</a> <em>parse()</em> method to generate the callable</p></li>
+<li><p><em>halt:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): Stop processing of record after this route is called. The same effect can be acheived by returning
+an object of type <code class="docutils literal notranslate"><span class="pre">dynamodb_stream_router.router.Halt</span></code>. Default is False</p></li>
+<li><p><em>priority:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): The priority of this route in the list of any matching routes for a record. Default is 0</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -275,6 +278,9 @@ the route should be called for a particular record. If type is <code class="docu
 <li><p><em>condition_expression:</em> (<code class="docutils literal notranslate"><span class="pre">Union[Callable,</span> <span class="pre">str]</span></code>): An expression that returns a boolean indicating if
 the route should be called for a particular record. If type is <code class="docutils literal notranslate"><span class="pre">str</span></code> then the expression will be parsed using
 <a class="reference internal" href="#dynamodb-stream-router-conditions-expression">dynamodb_stream_router.conditions.Expression</a> <em>parse()</em> method to generate the callable</p></li>
+<li><p><em>halt:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): Stop processing of record after this route is called. The same effect can be acheived by returning
+an object of type <code class="docutils literal notranslate"><span class="pre">dynamodb_stream_router.router.Halt</span></code>. Default is False</p></li>
+<li><p><em>priority:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): The priority of this route in the list of any matching routes for a record. Default is 0</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -328,7 +334,7 @@ routes that were called on the record</p>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.router.StreamRouter.route">
-<code class="sig-name descname"><span class="pre">route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.route" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halt</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.route" title="Permalink to this definition">¶</a></dt>
 <dd><p id="dynamodb-stream-router-router-streamrouter-route">Used as a decorator to register a route. Accepts keyword arguments that determine under what conditions the route will
 be called. If no condition_expression is provided then the route will be called for any operations that are
 passed.</p>
@@ -336,10 +342,13 @@ passed.</p>
 <dt class="field-odd">Keyword Arguments</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><em>operations:</em> (<code class="docutils literal notranslate"><span class="pre">Union[str,</span> <span class="pre">List[str]</span></code>): A Dynamodb operation or list of operations. Can be one or
-more of ‘REMOVE | INSERT | UPDATE’</p></li>
+more of ‘REMOVE | INSERT | MODIFY’</p></li>
 <li><p><em>condition_expression:</em> (<code class="docutils literal notranslate"><span class="pre">Union[Callable,</span> <span class="pre">str]</span></code>): An expression that returns a boolean indicating if
 the route should be called for a particular record. If type is <code class="docutils literal notranslate"><span class="pre">str</span></code> then the expression will be parsed using
 <a class="reference internal" href="#dynamodb-stream-router-conditions-expression">dynamodb_stream_router.conditions.Expression</a> <em>parse()</em>  to generate the callable</p></li>
+<li><p><em>halt:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): Stop processing of record after this route is called. The same effect can be acheived by returning
+an object of type <code class="docutils literal notranslate"><span class="pre">dynamodb_stream_router.router.Halt</span></code>. Default is False</p></li>
+<li><p><em>priority:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): The priority of this route in the list of any matching routes for a record. Default is 0</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -350,7 +359,7 @@ the route should be called for a particular record. If type is <code class="docu
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dynamodb_stream_router.router</span> <span class="kn">import</span> <span class="n">StreamRouter</span>
 
 
-<span class="nd">@router</span><span class="o">.</span><span class="n">route</span><span class="p">([</span><span class="s2">&quot;UPDATE&quot;</span><span class="p">,</span> <span class="s2">&quot;INSERT&quot;</span><span class="p">,</span> <span class="s2">&quot;DELETE&quot;</span><span class="p">],</span> <span class="n">condition_expression</span><span class="o">=</span><span class="s2">&quot;has_changed(&#39;foo&#39;)&quot;</span><span class="p">)</span>
+<span class="nd">@router</span><span class="o">.</span><span class="n">route</span><span class="p">([</span><span class="s2">&quot;MODIFY&quot;</span><span class="p">,</span> <span class="s2">&quot;INSERT&quot;</span><span class="p">,</span> <span class="s2">&quot;DELETE&quot;</span><span class="p">],</span> <span class="n">condition_expression</span><span class="o">=</span><span class="s2">&quot;has_changed(&#39;foo&#39;)&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">process_foo_any</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
     <span class="k">pass</span>
 
@@ -400,13 +409,16 @@ then setting this to a non-zero value will set it to False</p>
 <dl class="py method">
 <dt id="dynamodb_stream_router.router.StreamRouter.update">
 <code class="sig-name descname"><span class="pre">update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.update" title="Permalink to this definition">¶</a></dt>
-<dd><p id="dynamodb-stream-router-router-streamrouter-update">Wrapper for StreamRouter.route(). Creates a route for “UPDATE” operation, taking an optional condition_expression</p>
+<dd><p id="dynamodb-stream-router-router-streamrouter-update">Wrapper for StreamRouter.route(). Creates a route for “MODIFY” operation, taking an optional condition_expression</p>
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><em>condition_expression:</em> (<code class="docutils literal notranslate"><span class="pre">Union[Callable,</span> <span class="pre">str]</span></code>): An expression that returns a boolean indicating if
 the route should be called for a particular record. If type is <code class="docutils literal notranslate"><span class="pre">str</span></code> then the expression will be parsed using
 <a class="reference internal" href="#dynamodb-stream-router-conditions-expression">dynamodb_stream_router.conditions.Expression</a> <em>parse()</em> method to generate the callable</p></li>
+<li><p><em>halt:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): Stop processing of record after this route is called. The same effect can be acheived by returning
+an object of type <code class="docutils literal notranslate"><span class="pre">dynamodb_stream_router.router.Halt</span></code>. Default is False</p></li>
+<li><p><em>priority:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): The priority of this route in the list of any matching routes for a record. Default is 0</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -431,7 +443,7 @@ the route should be called for a particular record. If type is <code class="docu
 <h2>router.Route<a class="headerlink" href="#router-route" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="dynamodb_stream_router.router.Route">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">Route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dynamodb_stream_router.router.Operations</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.Route" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">Route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dynamodb_stream_router.router.Operations</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halt</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.Route" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
 <p id="dynamodb-stream-router-router-route">A route object to be registered into an instance of <a class="reference internal" href="#dynamodb-stream-router-router-streamrouter">dynamodb_stream_router.router.StreamRouter</a>
 See the following for usage:</p>
@@ -456,9 +468,21 @@ See the following for usage:</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Route.halt">
+<code class="sig-name descname"><span class="pre">halt</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#dynamodb_stream_router.router.Route.halt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional flag to indicate record processing should stop after this route is called</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt id="dynamodb_stream_router.router.Route.operations">
 <code class="sig-name descname"><span class="pre">operations</span></code><em class="property"><span class="pre">:</span> <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dynamodb_stream_router.router.Operations</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#dynamodb_stream_router.router.Route.operations" title="Permalink to this definition">¶</a></dt>
-<dd><p>The operations that this route is registered for (UPDATE | INSERT | DELETE)</p>
+<dd><p>The operations that this route is registered for (MODIFY | INSERT | DELETE)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Route.priority">
+<code class="sig-name descname"><span class="pre">priority</span></code><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><a class="headerlink" href="#dynamodb_stream_router.router.Route.priority" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional Priority to assign to this route. All routes that match a record will be called in order of priority</p>
 </dd></dl>
 
 </dd></dl>
@@ -475,7 +499,7 @@ or <a class="reference internal" href="#dynamodb-stream-router-conditions-expres
 <dl class="field-list simple">
 <dt class="field-odd">Properties</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><em>eventName:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): UPDATE | INSERT | DELETE</p></li>
+<li><p><em>eventName:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): MODIFY | INSERT | DELETE</p></li>
 <li><p><em>StreamViewType:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>): NEW_AND_OLD_IMAGES is the only one we support. Any other will cause an exception</p></li>
 <li><p><em>awsRegion:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>)</p></li>
 <li><p><em>eventID:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>)</p></li>
@@ -548,7 +572,7 @@ or <a class="reference internal" href="#dynamodb-stream-router-conditions-expres
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sly.yacc.Parser</span></code></p>
 <p id="dynamodb-stream-router-conditions-expression">Used to build an expression from a string that, when passed to the evaluation method, will return a bool
 by executing the statements in the expression against a <a class="reference internal" href="#dynamodb-stream-router-router-streamrecord">dynamodb_stream_router.router.StreamRecord</a>.
-Example  of testing an expression directly:</p>
+Example of testing an expression directly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dynamodb_stream_parser.conditions.parser</span> <span class="kn">import</span> <span class="n">Expression</span>
 <span class="kn">from</span> <span class="nn">dynamodb_stream_router.router</span> <span class="kn">import</span> <span class="n">StreamRouter</span><span class="p">,</span> <span class="n">Record</span>
 
@@ -557,7 +581,7 @@ Example  of testing an expression directly:</p>
 
 <span class="n">item</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;StreamViewType&quot;</span><span class="p">:</span> <span class="s2">&quot;NEW_AND_OLD_IMAGES&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;eventName&quot;</span><span class="p">:</span> <span class="s2">&quot;UPDATE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;eventName&quot;</span><span class="p">:</span> <span class="s2">&quot;MODIFY&quot;</span><span class="p">,</span>
     <span class="s2">&quot;dynamodb&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;OldImage&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -719,6 +743,10 @@ Example  of testing an expression directly:</p>
 <tr class="row-even"><td><p>attribute_exists(PATH)</p></td>
 <td><p>PATH - An element to test the existence of</p></td>
 <td><p>Returns a bool indicating if the specified key/index exists in PATH</p></td>
+</tr>
+<tr class="row-odd"><td><p>from_json(PATH)</p></td>
+<td><p>PATH - A path to decode</p></td>
+<td><p>Returns a value returned from simplejson.loads()</p></td>
 </tr>
 </tbody>
 </table>
