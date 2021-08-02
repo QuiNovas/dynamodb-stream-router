@@ -267,6 +267,8 @@ class Expression(Parser):
 
     def parse(self, expression: str) -> Callable:
         """
+        .. _dynamodb_stream_router.conditions.parser.Expression.parse:
+
         Takes an expression string and returns a function, which can evaluate against a record
 
         :Arguments:

@@ -175,9 +175,24 @@
 <h2>router.StreamRouter<a class="headerlink" href="#router-streamrouter" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="dynamodb_stream_router.router.StreamRouter">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">StreamRouter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threads</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threaded</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">StreamRouter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threads</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threaded</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_multiple_matches</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p id="dynamodb-stream-router-router-streamrouter">Intelligently decides what Callable to invoke for a given record based on the StreamRecord’s eventName and optional conditions in the form
+<p id="dynamodb-stream-router-router-streamrouter">Provides routing of Dynamodb Stream records to Callables based on record eventName and an optional condition, expressed
+as a string to be evaluated by <a class="reference internal" href="#dynamodb-stream-router-conditions-parser-expression-parse">dynamodb_stream_router.conditions.parser.Expression.parse</a> or a truthy function that receives
+the record as its sole argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>threaded:</em> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): If True then each record will be processed in a separate thread using ThreadPoolExecutor</p></li>
+<li><p><em>threads:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): Max number of threads for ThreadPoolExecutor. Only applies if <em>threaded=True</em></p></li>
+<li><p><em>allow_multiple_matches:</em> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): Optional flag indicating whether or not to allow multiple route matches
+for a record. If True and multiple routes match a record then <code class="docutils literal notranslate"><span class="pre">dynamodb_stream_router.exceptions.MultipleRouteMatches</span></code>
+will be raised. Useful if continuing to process a record after an unintended route match could cause problems in your
+application</p></li>
+</ul>
+</dd>
+</dl>
+<p>Intelligently decides what Callable to invoke for a given record based on the StreamRecord’s eventName and optional conditions in the form
 of callables or a condition expression that is parsed by <a class="reference internal" href="#dynamodb-stream-router-conditions-expression">dynamodb_stream_router.conditions.Expression</a> . Decorators are used to register callables
 as Route(s).</p>
 <p>Example Usage:</p>
@@ -186,58 +201,61 @@ as Route(s).</p>
 <span class="n">router</span> <span class="o">=</span> <span class="n">StreamRouter</span><span class="p">()</span>
 
 <span class="n">records</span> <span class="o">=</span> <span class="p">[{</span>
-    <span class="s2">&quot;StreamViewType&quot;</span><span class="p">:</span> <span class="s2">&quot;NEW_AND_OLD_IMAGES&quot;</span><span class="p">,</span>  <span class="c1"># Only NEW_AND_OLD_IMAGES are supported</span>
-    <span class="s2">&quot;eventName&quot;</span><span class="p">:</span> <span class="s2">&quot;MODIFY&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;dynamodb&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;OldImage&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="p">{</span>
-                            <span class="s2">&quot;bar&quot;</span><span class="p">:</span> <span class="p">{</span>
-                                <span class="s2">&quot;L&quot;</span><span class="p">:</span> <span class="p">[</span>
-                                    <span class="p">{</span><span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="s2">&quot;baz&quot;</span><span class="p">}</span>
-                                <span class="p">]</span>
+    <span class="c1"># Only NEW_AND_OLD_IMAGES are supported</span>
+        <span class="s2">&quot;StreamViewType&quot;</span><span class="p">:</span> <span class="s2">&quot;NEW_AND_OLD_IMAGES&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;eventName&quot;</span><span class="p">:</span> <span class="s2">&quot;MODIFY&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dynamodb&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;OldImage&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;foo&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;M&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="s2">&quot;bar&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                    <span class="s2">&quot;L&quot;</span><span class="p">:</span> <span class="p">[</span>
+                                        <span class="p">{</span><span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="s2">&quot;baz&quot;</span><span class="p">}</span>
+                                    <span class="p">]</span>
+                                <span class="p">}</span>
                             <span class="p">}</span>
                         <span class="p">}</span>
                     <span class="p">}</span>
                 <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;NewImage&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="s2">&quot;sometype&quot;</span><span class="p">}</span>
             <span class="p">}</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;NewImage&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="s2">&quot;sometype&quot;</span><span class="p">}</span>
         <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}]</span>
-
+    <span class="p">}]</span>
 
 <span class="nd">@router</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">condition_expression</span><span class="o">=</span><span class="s2">&quot;has_changed(&#39;type&#39;)&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">my_first_route</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
-    <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">def</span> <span class="nf">my_first_route</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
 
-
-<span class="n">res</span> <span class="o">=</span> <span class="n">router</span><span class="o">.</span><span class="n">resolve_all</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">router</span><span class="o">.</span><span class="n">resolve_all</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>In the example above the function <em>my_first_route()</em> will be called because <em>record.OldImage[“type”]</em> has changed in comparison to <em>record.NewImage[“type”].
-This example uses `dynamodb_stream_router.conditions.Expression`_ as the condition_expression used to match the route to the record. In addition to passing
-a string-based expression you could pass your own callable, for instance a lambda, that accepts *record</em> as its only required argument and returns a bool
+<p>In the example above the function * my_first_route() * will be called because * record.OldImage[“type”] * has changed in comparison to * record.NewImage[“type”].
+This example uses <a class="reference internal" href="#dynamodb-stream-router-conditions-expression">dynamodb_stream_router.conditions.Expression</a> as the condition_expression used to match the route to the record. In addition to passing
+a string-based expression you could pass your own callable, for instance a lambda, that accepts * record * as its only required argument and returns a bool
 indicating whether or not the route matches.</p>
 <p>Example using a lambda as condition_expression:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dynamodb_stream_router.router</span> <span class="kn">import</span> <span class="n">StreamRouter</span>
 
 <span class="n">router</span> <span class="o">=</span> <span class="n">StreamRouter</span><span class="p">()</span>
 
-
 <span class="nd">@router</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">condition_expression</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">OldImage</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">NewImage</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">])</span>
 <span class="k">def</span> <span class="nf">my_first_route</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
-    <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">True</span>
 
-
-<span class="n">res</span> <span class="o">=</span> <span class="n">router</span><span class="o">.</span><span class="n">resolve_all</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">router</span><span class="o">.</span><span class="n">resolve_all</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The second example (assuming we used the same list of records) would have the same result as the first</p>
+<p>The second example(assuming we used the same list of records) would have the same result as the first</p>
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.StreamRouter.allow_multiple_matches">
+<code class="sig-name descname"><span class="pre">allow_multiple_matches</span></code><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.allow_multiple_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not to allow multiple routes to be called on a single record. If False and multiple routes are found for a record an exception will be raised</p>
+</dd></dl>
+
 <dl class="py method">
 <dt id="dynamodb_stream_router.router.StreamRouter.insert">
 <code class="sig-name descname"><span class="pre">insert</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.insert" title="Permalink to this definition">¶</a></dt>
@@ -302,11 +320,13 @@ an object of type <code class="docutils literal notranslate"><span class="pre">d
 <dt id="dynamodb_stream_router.router.StreamRouter.resolve_all">
 <code class="sig-name descname"><span class="pre">resolve_all</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">records</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.router.Result" title="dynamodb_stream_router.router.Result"><span class="pre">dynamodb_stream_router.router.Result</span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.resolve_all" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterates through each record in a batch and calls any matching resolvers on them, returning a
-list containing <code class="docutils literal notranslate"><span class="pre">Result</span></code> objects for any routes that were called on the records</p>
+list containing <code class="docutils literal notranslate"><span class="pre">Result</span></code> objects for any routes that were called on the records. If a route is called
+on a record, and the route was created with <code class="docutils literal notranslate"><span class="pre">halt=True</span></code> or the route returns <code class="docutils literal notranslate"><span class="pre">dynamodb_stream_router.router.Halt()</span></code>
+then no further routes will be called on that record. Processing of other records will continue as normal.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><em>records:</em> (<code class="docutils literal notranslate"><span class="pre">List[dict]</span></code>)</p></li>
+<li><p><em>records:</em> (<code class="docutils literal notranslate"><span class="pre">List[dict]</span></code>): List of Dynamodb stream records to process. Normally you would pass <code class="docutils literal notranslate"><span class="pre">event[&quot;Records&quot;]</span></code></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -511,6 +531,7 @@ or <a class="reference internal" href="#dynamodb-stream-router-conditions-expres
 <li><p><em>OldImage:</em> (<code class="docutils literal notranslate"><span class="pre">dict</span></code>)</p></li>
 <li><p><em>SequenceNumber:</em> (<code class="docutils literal notranslate"><span class="pre">str</span></code>)</p></li>
 <li><p><em>SizeBytes:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>)</p></li>
+<li><p><em>original:</em> (<code class="docutils literal notranslate"><span class="pre">dict</span></code>): The original, unserialized record</p></li>
 </ul>
 </dd>
 <dt class="field-even">Arguments</dt>
@@ -818,7 +839,7 @@ Example of testing an expression directly:</p>
 <dl class="py method">
 <dt id="dynamodb_stream_router.conditions.parser.Expression.parse">
 <code class="sig-name descname"><span class="pre">parse</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.conditions.parser.Expression.parse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Takes an expression string and returns a function, which can evaluate against a record</p>
+<dd><p id="dynamodb-stream-router-conditions-parser-expression-parse">Takes an expression string and returns a function, which can evaluate against a record</p>
 <dl class="field-list simple">
 <dt class="field-odd">Arguments</dt>
 <dd class="field-odd"><ul class="simple">

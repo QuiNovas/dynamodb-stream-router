@@ -192,6 +192,19 @@ class StreamRouter:
     """
     .. _dynamodb_stream_router.router.StreamRouter:
 
+    Provides routing of Dynamodb Stream records to Callables based on record eventName and an optional condition, expressed
+    as a string to be evaluated by `dynamodb_stream_router.conditions.parser.Expression.parse`_ or a truthy function that receives
+    the record as its sole argument.
+
+    :Keyword Arguments:
+        * *threaded:* (``bool``): If True then each record will be processed in a separate thread using ThreadPoolExecutor
+        * *threads:* (``int``): Max number of threads for ThreadPoolExecutor. Only applies if *threaded=True*
+        * *allow_multiple_matches:* (``bool``): Optional flag indicating whether or not to allow multiple route matches
+          for a record. If True and multiple routes match a record then ``dynamodb_stream_router.exceptions.MultipleRouteMatches``
+          will be raised. Useful if continuing to process a record after an unintended route match could cause problems in your
+          application
+
+
     Intelligently decides what Callable to invoke for a given record based on the StreamRecord's eventName and optional conditions in the form
     of callables or a condition expression that is parsed by `dynamodb_stream_router.conditions.Expression`_ . Decorators are used to register callables
     as Route(s).
@@ -206,42 +219,41 @@ class StreamRouter:
         router = StreamRouter()
 
         records = [{
-            "StreamViewType": "NEW_AND_OLD_IMAGES",  # Only NEW_AND_OLD_IMAGES are supported
-            "eventName": "MODIFY",
-            "dynamodb": {
-                "OldImage": {
-                    "type": {
-                        "M": {
-                            "foo": {
-                                "M": {
-                                    "bar": {
-                                        "L": [
-                                            {"S": "baz"}
-                                        ]
+            # Only NEW_AND_OLD_IMAGES are supported
+                "StreamViewType": "NEW_AND_OLD_IMAGES",
+                "eventName": "MODIFY",
+                "dynamodb": {
+                    "OldImage": {
+                        "type": {
+                            "M": {
+                                "foo": {
+                                    "M": {
+                                        "bar": {
+                                            "L": [
+                                                {"S": "baz"}
+                                            ]
+                                        }
                                     }
                                 }
                             }
                         }
+                    },
+                    "NewImage": {
+                        "type": {"S": "sometype"}
                     }
-                },
-                "NewImage": {
-                    "type": {"S": "sometype"}
                 }
-            }
-        }]
-
+            }]
 
         @router.update(condition_expression="has_changed('type')")
-        def my_first_route(record):
-            return True
+            def my_first_route(record):
+                return True
+
+            res = router.resolve_all(records)
 
 
-        res = router.resolve_all(records)
-
-
-    In the example above the function *my_first_route()* will be called because *record.OldImage["type"]* has changed in comparison to *record.NewImage["type"].
+    In the example above the function * my_first_route() * will be called because * record.OldImage["type"] * has changed in comparison to * record.NewImage["type"].
     This example uses `dynamodb_stream_router.conditions.Expression`_ as the condition_expression used to match the route to the record. In addition to passing
-    a string-based expression you could pass your own callable, for instance a lambda, that accepts *record* as its only required argument and returns a bool
+    a string-based expression you could pass your own callable, for instance a lambda, that accepts * record * as its only required argument and returns a bool
     indicating whether or not the route matches.
 
     Example using a lambda as condition_expression:
@@ -253,18 +265,15 @@ class StreamRouter:
 
         router = StreamRouter()
 
-
         @router.update(condition_expression=lambda x: x.OldImage["type"] != x.NewImage["type"])
         def my_first_route(record):
-            return True
+                return True
+
+            res = router.resolve_all(records)
 
 
-        res = router.resolve_all(records)
-
-
-    The second example (assuming we used the same list of records) would have the same result as the first
+    The second example(assuming we used the same list of records) would have the same result as the first
     """
-
     __instance = None
     __threads = 0
     __threaded = False
@@ -292,29 +301,11 @@ class StreamRouter:
         return cls.__instance
 
     def __init__(self, *args, **kwargs):
-        """
-        Provides routing of Dynamodb Stream records to Callables based on record eventName and an optional condition, expressed
-        as a string to be evaluated by ``dynamodb_stream_router.conditions.Expression.parse`` or a truthy function that receives
-        the record as its sole argument.
-
-        :Keyword Arguments:
-            * *threaded:* (``bool`): If True then each record will be processed in a separate thread using ThreadPoolExecutor
-            * *threads:* (``int`): Max number of threads for ThreadPoolExecutor. Only applies if *threaded=True*
-            * *allow_multiple_matches:* (``bool``): Optional flag indicating whether or not to allow multiple route matches
-              for a record. If True and multiple routes match a record then ``dynamodb_stream_router.exceptions.MultipleRouteMatches``
-              will be raised. Useful if continuing to process a record after an unintended route match could cause problems in your
-              application
-
-        """
 
         #: A list of dynamodb_stream_router.Route that are registered to the router
         self.routes: RouteSet = RouteSet(**{"REMOVE": [], "INSERT": [], "MODIFY": []})
-
         #: Whether or not to allow multiple routes to be called on a single record. If False and multiple routes are found for a record an exception will be raised
         self.allow_multiple_matches = kwargs.get("allow_multiple_matches", True)
-
-        self.format_record = True
-
         self._condition_parser = Expression()
 
     def update(self, **kwargs) -> Callable:
