@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.8
 from concurrent.futures import ThreadPoolExecutor
+from logging import getLogger
 import typeguard
 from os import environ
 from enum import Enum, auto
@@ -12,7 +13,9 @@ from typing import (
     Any,
 )
 from .conditions.parser import Expression
-from .exceptions import ConditionError
+from .exceptions import ConditionError, MultipleRouteMatches
+
+getLogger().setLevel("INFO")
 
 if not environ.get("TYPECHECKED"):
     typeguard.typechecked = lambda: True
@@ -71,7 +74,8 @@ __STREAM_RECORD_TYPES = (
     ("NewImage", dict),
     ("OldImage", dict),
     ("SequenceNumber", str),
-    ("SizeBytes", int)
+    ("SizeBytes", int),
+    ("original", dict)
 
 )
 
@@ -110,6 +114,7 @@ class StreamRecord(
         * *OldImage:* (``dict``)
         * *SequenceNumber:* (``str``)
         * *SizeBytes:* (``int``)
+        * *original:* (``dict``): The original, unserialized record
 
     :Arguments:
         * *record:* (``dict``):  A single record from a Dynamodb stream event
@@ -118,6 +123,7 @@ class StreamRecord(
         `dynamodb_stream_router.router.StreamRecord`_
     """
     def __new__(cls, record):
+
         if "dynamodb" in record:
             for k in [
                 "NewImage",
@@ -149,6 +155,7 @@ class StreamRecord(
         }
 
         record = {
+            "original": record,
             **defaults,
             **record
         }
@@ -263,7 +270,7 @@ class StreamRouter:
     __threaded = False
     __executor = None
 
-    def __new__(cls, *args, threads: int = None, threaded: bool = False, **kwargs):
+    def __new__(cls, *args, threads: int = None, threaded: bool = False, allow_multiple_matches: bool = True, **kwargs):
         if not threaded and threads is not None:
             raise AttributeError(
                 "Argument 'threads' doesn't make sense if 'threaded=False'"
@@ -293,11 +300,21 @@ class StreamRouter:
         :Keyword Arguments:
             * *threaded:* (``bool`): If True then each record will be processed in a separate thread using ThreadPoolExecutor
             * *threads:* (``int`): Max number of threads for ThreadPoolExecutor. Only applies if *threaded=True*
+            * *allow_multiple_matches:* (``bool``): Optional flag indicating whether or not to allow multiple route matches
+              for a record. If True and multiple routes match a record then ``dynamodb_stream_router.exceptions.MultipleRouteMatches``
+              will be raised. Useful if continuing to process a record after an unintended route match could cause problems in your
+              application
+
         """
 
         #: A list of dynamodb_stream_router.Route that are registered to the router
         self.routes: RouteSet = RouteSet(**{"REMOVE": [], "INSERT": [], "MODIFY": []})
+
+        #: Whether or not to allow multiple routes to be called on a single record. If False and multiple routes are found for a record an exception will be raised
+        self.allow_multiple_matches = kwargs.get("allow_multiple_matches", True)
+
         self.format_record = True
+
         self._condition_parser = Expression()
 
     def update(self, **kwargs) -> Callable:
@@ -529,10 +546,12 @@ class StreamRouter:
     def resolve_all(self, records: List[dict]) -> List[Result]:
         """
         Iterates through each record in a batch and calls any matching resolvers on them, returning a
-        list containing ``Result`` objects for any routes that were called on the records
+        list containing ``Result`` objects for any routes that were called on the records. If a route is called
+        on a record, and the route was created with ``halt=True`` or the route returns ``dynamodb_stream_router.router.Halt()``
+        then no further routes will be called on that record. Processing of other records will continue as normal.
 
         :Arguments:
-            * *records:* (``List[dict]``)
+            * *records:* (``List[dict]``): List of Dynamodb stream records to process. Normally you would pass ``event["Records"]``
 
         :returns:
             List[`dynamodb_stream_router.router.Result`_ ]
@@ -591,6 +610,12 @@ class StreamRouter:
                     routes_to_call,
                     lambda x: x.priority
                 )
+
+        num_of_routes = len(routes_to_call)
+        getLogger().info(f"Found {num_of_routes} routes for {route._asdict()}")
+
+        if not self.allow_multiple_matches and num_of_routes > 1:
+            raise MultipleRouteMatches(f"Multiple routes matched for record {record._asdict}")
 
         results = []
         for route in routes_to_call:

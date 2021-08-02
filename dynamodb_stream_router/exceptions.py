@@ -12,5 +12,5 @@ class ConditionError(Exception):
     pass
 
 
-class JsonError(Exception):
+class MultipleRouteMatches(Exception):
     pass
