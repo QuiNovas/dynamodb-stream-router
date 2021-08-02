@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.8
 # pyright: reportUndefinedVariable=false
 from typing import TYPE_CHECKING
+from simplejson import loads
 from sly import Parser
 from sly.yacc import YaccProduction
 from re import match
@@ -209,6 +210,9 @@ class Expression(Parser):
         * - attribute_exists(PATH)
           - PATH - An element to test the existence of
           - Returns a bool indicating if the specified key/index exists in PATH
+        * - from_json(PATH)
+          - PATH - A path to decode
+          - Returns a value returned from simplejson.loads()
     """
 
     _expression_cache = {}
@@ -558,6 +562,10 @@ class Expression(Parser):
         if isinstance(p, YaccProduction):
             raise KeywordError(f"Unknown keyword {p.NAME}")
         return lambda m: m.get(NAME) if p(m) is not None else None
+
+    @_('from_json "(" path ")" ')  # noqa: 821
+    def function(self, p):  # noqa: 811
+        return lambda m: loads(p.path(m))
 
     @_('CHANGED "(" in_list ")"')  # noqa: 821
     @_('CHANGED "(" VALUE ")"')  # noqa: 821

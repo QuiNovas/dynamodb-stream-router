@@ -10,3 +10,7 @@ class KeywordError(Exception):
 
 class ConditionError(Exception):
     pass
+
+
+class JsonError(Exception):
+    pass

@@ -11,6 +11,9 @@ Features:
     - Filter routes to call on a record using a conditional expression or custom function
     - Conditional expressions are parsed using a custom grammar lexer/parser written with `sly`, so they are really, really fast
     - Route return values include all the information about the execution of that route for debugging
+    - Matching Routes for a record can be prioritized
+    - Supports decoding values stored as JSON strings
+    - Route resolution for a record can be stopped by either arguments when the route is registered or by returning `dynamodb_stream_router.router.Halt()`
 
 
 Full API documentation available at https://quinovas.github.io/dynamodb-stream-router
@@ -176,6 +179,8 @@ Comparison operators, except for regex comparison, can compare PATH to VALUE, PA
 |                           |    N, NS, L, M, or BOOL                                |                                                                                    |
 +---------------------------+--------------------------------------------------------+------------------------------------------------------------------------------------+
 | attribute_exists(PATH)    | PATH - The path to test                                | Returns True if the provided path exists                                           |
++---------------------------+--------------------------------------------------------+------------------------------------------------------------------------------------+
+| from_json(PATH)           | PATH - The path to decode                              | Returns object decoded using simplejson.loads()                                    |
 +---------------------------+--------------------------------------------------------+------------------------------------------------------------------------------------+
 
 

@@ -53,6 +53,10 @@ class Route(NamedTuple):
     operations: List[Operations]
     #: Optional `dynamodb_stream_router.conditions.Expression`_ string or Callable to be used for route matching
     condition_expression: Union[Callable, str] = None
+    #: Optional Priority to assign to this route. All routes that match a record will be called in order of priority
+    priority: int = 0
+    #: Optional flag to indicate record processing should stop after this route is called
+    halt: bool = False
 
 
 __STREAM_RECORD_TYPES = (
@@ -70,6 +74,14 @@ __STREAM_RECORD_TYPES = (
     ("SizeBytes", int)
 
 )
+
+
+class Halt:
+    """
+    If a route returns an instance of ``Halt`` the route resolution will stop for the current record
+    being processed. All other records will continue to be processed as usual.
+    """
+    pass
 
 
 class StreamRecord(
@@ -298,6 +310,9 @@ class StreamRouter:
             * *condition_expression:* (``Union[Callable, str]``): An expression that returns a boolean indicating if
               the route should be called for a particular record. If type is ``str`` then the expression will be parsed using
               `dynamodb_stream_router.conditions.Expression`_ *parse()* method to generate the callable
+            * *halt:* (``int``): Stop processing of record after this route is called. The same effect can be acheived by returning
+              an object of type ``dynamodb_stream_router.router.Halt``. Default is False
+            * *priority:* (``int``): The priority of this route in the list of any matching routes for a record. Default is 0
 
         :returns:
             ``Callable``
@@ -327,6 +342,9 @@ class StreamRouter:
             * *condition_expression:* (``Union[Callable, str]``): An expression that returns a boolean indicating if
               the route should be called for a particular record. If type is ``str`` then the expression will be parsed using
               `dynamodb_stream_router.conditions.Expression`_ *parse()* method to generate the callable
+            * *halt:* (``int``): Stop processing of record after this route is called. The same effect can be acheived by returning
+              an object of type ``dynamodb_stream_router.router.Halt``. Default is False
+            * *priority:* (``int``): The priority of this route in the list of any matching routes for a record. Default is 0
 
         :returns:
             ``Callable``
@@ -356,6 +374,9 @@ class StreamRouter:
             * *condition_expression:* (``Union[Callable, str]``): An expression that returns a boolean indicating if
               the route should be called for a particular record. If type is ``str`` then the expression will be parsed using
               `dynamodb_stream_router.conditions.Expression`_ *parse()* method to generate the callable
+            * *halt:* (``int``): Stop processing of record after this route is called. The same effect can be acheived by returning
+              an object of type ``dynamodb_stream_router.router.Halt``. Default is False
+            * *priority:* (``int``): The priority of this route in the list of any matching routes for a record. Default is 0
 
         :returns:
             ``Callable``
@@ -379,6 +400,8 @@ class StreamRouter:
         self,
         operations: Union[str, List[str]],
         condition_expression: Union[Callable, str] = None,
+        halt: bool = False,
+        priority: int = 0
     ) -> Callable:
 
         """
@@ -394,6 +417,9 @@ class StreamRouter:
             * *condition_expression:* (``Union[Callable, str]``): An expression that returns a boolean indicating if
               the route should be called for a particular record. If type is ``str`` then the expression will be parsed using
               `dynamodb_stream_router.conditions.Expression`_ *parse()*  to generate the callable
+            * *halt:* (``int``): Stop processing of record after this route is called. The same effect can be acheived by returning
+              an object of type ``dynamodb_stream_router.router.Halt``. Default is False
+            * *priority:* (``int``): The priority of this route in the list of any matching routes for a record. Default is 0
 
         :returns:
             ``Callable``
@@ -437,6 +463,8 @@ class StreamRouter:
                 operations=operations,
                 callable=func,
                 condition_expression=condition_expression,
+                priority=priority,
+                halt=halt
             )
 
             for x in route.operations:
@@ -559,12 +587,23 @@ class StreamRouter:
                 if test:
                     routes_to_call.append(route)
 
-        record_args = [record for _ in routes_to_call]
+                routes_to_call.sort(
+                    routes_to_call,
+                    lambda x: x.priority
+                )
 
-        return map(self.__execute_route_callable, routes_to_call, record_args)
+        results = []
+        for route in routes_to_call:
+            result = Result(
+                value=route.callable(record),
+                reccord=record,
+                route=route
+            )
+            results.append(result)
+            if route.halt or isinstance(result, Halt):
+                break
 
-    def __execute_route_callable(self, route, record):
-        return Result(route=route, record=record, value=route.callable(record))
+        return results
 
 
 def parse_image(image: dict):
