@@ -597,11 +597,7 @@ class StreamRouter:
                 if test:
                     routes_to_call.append(route)
 
-                routes_to_call.sort(
-                    routes_to_call,
-                    lambda x: x.priority
-                )
-
+        routes_to_call.sort(key=lambda x: x.priority)
         num_of_routes = len(routes_to_call)
         getLogger().info(f"Found {num_of_routes} routes for {route._asdict()}")
 
@@ -612,7 +608,7 @@ class StreamRouter:
         for route in routes_to_call:
             result = Result(
                 value=route.callable(record),
-                reccord=record,
+                record=record,
                 route=route
             )
             results.append(result)
