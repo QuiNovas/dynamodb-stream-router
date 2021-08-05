@@ -124,6 +124,9 @@ class StreamRecord(
     """
     def __new__(cls, record):
 
+        if isinstance(record, cls):
+            return record
+
         if "dynamodb" in record:
             for k in [
                 "NewImage",
@@ -599,7 +602,7 @@ class StreamRouter:
 
         routes_to_call.sort(key=lambda x: x.priority)
         num_of_routes = len(routes_to_call)
-        getLogger().info(f"Found {num_of_routes} routes for {route._asdict()}")
+        getLogger().info(f"Found {num_of_routes} routes for {record._asdict()}")
 
         if not self.allow_multiple_matches and num_of_routes > 1:
             raise MultipleRouteMatches(f"Multiple routes matched for record {record._asdict}")

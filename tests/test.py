@@ -109,6 +109,8 @@ records = [{
 }]
 
 
+record = StreamRecord(records[0])
+
 @router.update(condition_expression="NOT (attribute_exists($NEW.systemd) | attribute_exists($OLD.systemd))")
 def delete_tenant(record):
     print(record._asdict())

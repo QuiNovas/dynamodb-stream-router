@@ -21,7 +21,6 @@ Full API documentation available at https://quinovas.github.io/dynamodb-stream-r
 Example Usage:
 **************
 
-.. highlight:: python
 .. code-block:: python
 
     from dynamodb_stream_router.router import Record, StreamRouter
@@ -74,7 +73,6 @@ indicating whether or not the route matches.
 
 Example using a lambda as condition_expression:
 
-.. highlight:: python
 .. code-block:: python
 
     from dynamodb_stream_router.router import StreamRouter
