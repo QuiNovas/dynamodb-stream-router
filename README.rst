@@ -185,7 +185,6 @@ Comparison operators, except for regex comparison, can compare PATH to VALUE, PA
 Example testing an expression directly:
 ***************************************
 
-.. highlight:: python
 .. code-block:: python
 
     from dynamodb_stream_parser.conditions.parser import Expression
