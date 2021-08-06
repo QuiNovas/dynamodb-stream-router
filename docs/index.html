@@ -89,6 +89,7 @@
 <li><a class="reference internal" href="#dynamodb-stream-router">dynamodb_stream_router</a><ul>
 <li><a class="reference internal" href="#router-streamrouter">router.StreamRouter</a></li>
 <li><a class="reference internal" href="#router-route">router.Route</a></li>
+<li><a class="reference internal" href="#router-exceptionhandler">router.ExceptionHandler</a></li>
 <li><a class="reference internal" href="#router-streamrecord">router.StreamRecord</a></li>
 <li><a class="reference internal" href="#router-result">router.Result</a></li>
 </ul>
@@ -175,7 +176,7 @@
 <h2>router.StreamRouter<a class="headerlink" href="#router-streamrouter" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="dynamodb_stream_router.router.StreamRouter">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">StreamRouter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threads</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threaded</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_multiple_matches</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">StreamRouter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threads</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threaded</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_multiple_matches</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exception_handler</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.router.ExceptionHandler" title="dynamodb_stream_router.router.ExceptionHandler"><span class="pre">dynamodb_stream_router.router.ExceptionHandler</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halt_on_exception</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p id="dynamodb-stream-router-router-streamrouter">Provides routing of Dynamodb Stream records to Callables based on record eventName and an optional condition, expressed
 as a string to be evaluated by <a class="reference internal" href="#dynamodb-stream-router-conditions-parser-expression-parse">dynamodb_stream_router.conditions.parser.Expression.parse</a> or a truthy function that receives
@@ -226,7 +227,7 @@ as Route(s).</p>
         <span class="p">}</span>
     <span class="p">}]</span>
 
-<span class="nd">@router</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">condition_expression</span><span class="o">=</span><span class="s2">&quot;has_changed(&#39;type&#39;)&quot;</span><span class="p">)</span>
+<span class="nd">@router</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">condition_expression</span><span class="o">=</span><span class="s2">&quot;has_changed(&#39;type&#39;)&quot;</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">my_first_route</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">True</span>
 
@@ -242,7 +243,7 @@ indicating whether or not the route matches.</p>
 
 <span class="n">router</span> <span class="o">=</span> <span class="n">StreamRouter</span><span class="p">()</span>
 
-<span class="nd">@router</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">condition_expression</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">OldImage</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">NewImage</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">])</span>
+<span class="nd">@router</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">condition_expression</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">OldImage</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">x</span><span class="o">.</span><span class="n">NewImage</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">])</span>
 <span class="k">def</span> <span class="nf">my_first_route</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">True</span>
 
@@ -252,8 +253,20 @@ indicating whether or not the route matches.</p>
 <p>The second example(assuming we used the same list of records) would have the same result as the first</p>
 <dl class="py attribute">
 <dt id="dynamodb_stream_router.router.StreamRouter.allow_multiple_matches">
-<code class="sig-name descname"><span class="pre">allow_multiple_matches</span></code><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.allow_multiple_matches" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">allow_multiple_matches</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.allow_multiple_matches" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether or not to allow multiple routes to be called on a single record. If False and multiple routes are found for a record an exception will be raised</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.StreamRouter.exception_handler">
+<code class="sig-name descname"><span class="pre">exception_handler</span></code><em class="property"><span class="pre">:</span> <a class="reference internal" href="#dynamodb_stream_router.router.ExceptionHandler" title="dynamodb_stream_router.router.ExceptionHandler"><span class="pre">dynamodb_stream_router.router.ExceptionHandler</span></a></em><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.exception_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>If defined then a route handler that raises an exception defined in exception_handler will have its record, and the exception, passed to exception_handler.handler</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.StreamRouter.halt_on_exception">
+<code class="sig-name descname"><span class="pre">halt_on_exception</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.halt_on_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>If defined then a route handler that raises an exception will propagate that exception. Otherwise the exception will be placed in the result and execution will continue</p>
 </dd></dl>
 
 <dl class="py method">
@@ -280,6 +293,36 @@ an object of type <code class="docutils literal notranslate"><span class="pre">d
 
 
 <span class="nd">@router</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">condition_expression</span><span class="o">=</span><span class="s2">&quot;has_changed(&#39;foo&#39;)&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">process_foo</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynamodb_stream_router.router.StreamRouter.modify">
+<code class="sig-name descname"><span class="pre">modify</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.modify" title="Permalink to this definition">¶</a></dt>
+<dd><p id="dynamodb-stream-router-router-streamrouter-modify">Wrapper for StreamRouter.route(). Creates a route for “MODIFY” operation, taking an optional condition_expression</p>
+<dl class="field-list simple">
+<dt class="field-odd">Keyword Arguments</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><em>condition_expression:</em> (<code class="docutils literal notranslate"><span class="pre">Union[Callable,</span> <span class="pre">str]</span></code>): An expression that returns a boolean indicating if
+the route should be called for a particular record. If type is <code class="docutils literal notranslate"><span class="pre">str</span></code> then the expression will be parsed using
+<a class="reference internal" href="#dynamodb-stream-router-conditions-expression">dynamodb_stream_router.conditions.Expression</a> <em>parse()</em> method to generate the callable</p></li>
+<li><p><em>halt:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): Stop processing of record after this route is called. The same effect can be acheived by returning
+an object of type <code class="docutils literal notranslate"><span class="pre">dynamodb_stream_router.router.Halt</span></code>. Default is False</p></li>
+<li><p><em>priority:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): The priority of this route in the list of any matching routes for a record. Default is 0</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Callable</span></code></p>
+</dd>
+</dl>
+<p>Example Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dynamodb_stream_router.router</span> <span class="kn">import</span> <span class="n">StreamRouter</span>
+
+
+<span class="nd">@router</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">condition_expression</span><span class="o">=</span><span class="s2">&quot;has_changed(&#39;foo&#39;)&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">process_foo</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
     <span class="k">pass</span>
 </pre></div>
@@ -354,7 +397,7 @@ routes that were called on the record</p>
 
 <dl class="py method">
 <dt id="dynamodb_stream_router.router.StreamRouter.route">
-<code class="sig-name descname"><span class="pre">route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halt</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.route" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halt</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exception_handler</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.router.ExceptionHandler" title="dynamodb_stream_router.router.ExceptionHandler"><span class="pre">dynamodb_stream_router.router.ExceptionHandler</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halt_on_exception</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.route" title="Permalink to this definition">¶</a></dt>
 <dd><p id="dynamodb-stream-router-router-streamrouter-route">Used as a decorator to register a route. Accepts keyword arguments that determine under what conditions the route will
 be called. If no condition_expression is provided then the route will be called for any operations that are
 passed.</p>
@@ -369,6 +412,12 @@ the route should be called for a particular record. If type is <code class="docu
 <li><p><em>halt:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): Stop processing of record after this route is called. The same effect can be acheived by returning
 an object of type <code class="docutils literal notranslate"><span class="pre">dynamodb_stream_router.router.Halt</span></code>. Default is False</p></li>
 <li><p><em>priority:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): The priority of this route in the list of any matching routes for a record. Default is 0</p></li>
+<li><p><em>halt_on_exception:</em> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): If True and a route’s callable raises an exception then the exception will be propagated,
+otherwise the exception will be caught and placed in Result.error</p></li>
+<li><p><em>exception_handler:</em> (<code class="docutils literal notranslate"><span class="pre">ExceptionHandler</span></code> ): An instance of <a class="reference internal" href="#dynamodb-stream-router-router-exceptionhandler">dynamodb_stream_router.router.ExceptionHandler</a> that, if a
+route’s callable raises an exception AND the exception is of one of the types in exception_handler.exceptions, will have
+its handler called with the record and exception that was raised passed as arguments. Nothing is done with the return
+value of the handler and if <cite>halt_on_exception</cite> is set then the original exception will still be propagated</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -426,36 +475,6 @@ then setting this to a non-zero value will set it to False</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="dynamodb_stream_router.router.StreamRouter.update">
-<code class="sig-name descname"><span class="pre">update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Callable</span><a class="headerlink" href="#dynamodb_stream_router.router.StreamRouter.update" title="Permalink to this definition">¶</a></dt>
-<dd><p id="dynamodb-stream-router-router-streamrouter-update">Wrapper for StreamRouter.route(). Creates a route for “MODIFY” operation, taking an optional condition_expression</p>
-<dl class="field-list simple">
-<dt class="field-odd">Keyword Arguments</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><em>condition_expression:</em> (<code class="docutils literal notranslate"><span class="pre">Union[Callable,</span> <span class="pre">str]</span></code>): An expression that returns a boolean indicating if
-the route should be called for a particular record. If type is <code class="docutils literal notranslate"><span class="pre">str</span></code> then the expression will be parsed using
-<a class="reference internal" href="#dynamodb-stream-router-conditions-expression">dynamodb_stream_router.conditions.Expression</a> <em>parse()</em> method to generate the callable</p></li>
-<li><p><em>halt:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): Stop processing of record after this route is called. The same effect can be acheived by returning
-an object of type <code class="docutils literal notranslate"><span class="pre">dynamodb_stream_router.router.Halt</span></code>. Default is False</p></li>
-<li><p><em>priority:</em> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): The priority of this route in the list of any matching routes for a record. Default is 0</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">Callable</span></code></p>
-</dd>
-</dl>
-<p>Example Usage:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dynamodb_stream_router.router</span> <span class="kn">import</span> <span class="n">StreamRouter</span>
-
-
-<span class="nd">@router</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">condition_expression</span><span class="o">=</span><span class="s2">&quot;has_changed(&#39;foo&#39;)&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">process_foo</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
-    <span class="k">pass</span>
-</pre></div>
-</div>
-</dd></dl>
-
 </dd></dl>
 
 </div>
@@ -463,7 +482,7 @@ an object of type <code class="docutils literal notranslate"><span class="pre">d
 <h2>router.Route<a class="headerlink" href="#router-route" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="dynamodb_stream_router.router.Route">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">Route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dynamodb_stream_router.router.Operations</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halt</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.Route" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">Route</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">dynamodb_stream_router.router.Operations</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_expression</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halt</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">halt_on_exception</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exception_handler</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.router.ExceptionHandler" title="dynamodb_stream_router.router.ExceptionHandler"><span class="pre">dynamodb_stream_router.router.ExceptionHandler</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.Route" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
 <p id="dynamodb-stream-router-router-route">A route object to be registered into an instance of <a class="reference internal" href="#dynamodb-stream-router-router-streamrouter">dynamodb_stream_router.router.StreamRouter</a>
 See the following for usage:</p>
@@ -471,7 +490,7 @@ See the following for usage:</p>
 <div><ul class="simple">
 <li><p><a class="reference internal" href="#dynamodb-stream-router-router-streamrouter-insert">dynamodb_stream_router.router.StreamRouter.insert</a></p></li>
 <li><p><a class="reference internal" href="#dynamodb-stream-router-router-streamrouter-remove">dynamodb_stream_router.router.StreamRouter.remove</a></p></li>
-<li><p><a class="reference internal" href="#dynamodb-stream-router-router-streamrouter-update">dynamodb_stream_router.router.StreamRouter.update</a></p></li>
+<li><p><a class="reference internal" href="#dynamodb-stream-router-router-streamrouter-modify">dynamodb_stream_router.router.StreamRouter.modify</a></p></li>
 <li><p><a class="reference internal" href="#dynamodb-stream-router-router-streamrouter-route">dynamodb_stream_router.router.StreamRouter.Route</a></p></li>
 </ul>
 </div></blockquote>
@@ -488,9 +507,21 @@ See the following for usage:</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Route.exception_handler">
+<code class="sig-name descname"><span class="pre">exception_handler</span></code><em class="property"><span class="pre">:</span> <a class="reference internal" href="#dynamodb_stream_router.router.ExceptionHandler" title="dynamodb_stream_router.router.ExceptionHandler"><span class="pre">dynamodb_stream_router.router.ExceptionHandler</span></a></em><a class="headerlink" href="#dynamodb_stream_router.router.Route.exception_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional callable that will be passed the record and exception that was raised in the case that the route’s callable raises an exception</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt id="dynamodb_stream_router.router.Route.halt">
 <code class="sig-name descname"><span class="pre">halt</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#dynamodb_stream_router.router.Route.halt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optional flag to indicate record processing should stop after this route is called</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Route.halt_on_exception">
+<code class="sig-name descname"><span class="pre">halt_on_exception</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#dynamodb_stream_router.router.Route.halt_on_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional flat that indicates whether to halt all processing if a route raises an exception. If True then the exception will be raised, if False the exception will be placed in Result.error</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -503,6 +534,57 @@ See the following for usage:</p>
 <dt id="dynamodb_stream_router.router.Route.priority">
 <code class="sig-name descname"><span class="pre">priority</span></code><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><a class="headerlink" href="#dynamodb_stream_router.router.Route.priority" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optional Priority to assign to this route. All routes that match a record will be called in order of priority</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="router-exceptionhandler">
+<h2>router.ExceptionHandler<a class="headerlink" href="#router-exceptionhandler" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="dynamodb_stream_router.router.ExceptionHandler">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">ExceptionHandler</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.router.StreamRecord" title="dynamodb_stream_router.router.StreamRecord"><span class="pre">dynamodb_stream_router.router.StreamRecord</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exceptions</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.ExceptionHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<p id="dynamodb-stream-router-router-exceptionhandler">Provides a mechanism for attaching a callable to either the router or a specific route. When a route’s callable
+raises an exception and the route or router has <cite>exception_handler</cite> set, then the handler will be passed the record
+and exception that was raised by the route’s callable as arguments IF the exception is of a type in <cite>ExceptionHandler.exceptions</cite>.
+Nothing is done with the return value of the handler</p>
+<p>Example Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dynamodb_stream_router</span> <span class="kn">import</span> <span class="n">StreamRouter</span><span class="p">,</span> <span class="n">ExceptionHandler</span>
+<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">getLogger</span>
+
+
+<span class="k">def</span> <span class="nf">error_handler</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+
+<span class="n">router</span> <span class="o">=</span> <span class="n">StreamRouter</span><span class="p">()</span>
+<span class="n">router</span><span class="o">.</span><span class="n">exception_handler</span> <span class="o">=</span> <span class="n">ExceptionHandler</span><span class="p">(</span>
+    <span class="n">handler</span><span class="o">=</span><span class="n">error_handler</span><span class="p">,</span>
+    <span class="n">exceptions</span><span class="o">=</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span>
+<span class="p">)</span>
+
+
+<span class="nd">@router</span><span class="o">.</span><span class="n">modify</span><span class="p">(</span><span class="n">condition_expression</span><span class="o">=</span><span class="s2">&quot;$OLD.foo == True&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">handle_foo</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+    <span class="c1"># Will trigger error_handler() to print the record and exception</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Caught an exception in handle_foo&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+    <span class="n">router</span><span class="o">.</span><span class="n">resolve_all</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;Records&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.ExceptionHandler.exceptions">
+<code class="sig-name descname"><span class="pre">exceptions</span></code><em class="property"><span class="pre">:</span> <span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#dynamodb_stream_router.router.ExceptionHandler.exceptions" title="Permalink to this definition">¶</a></dt>
+<dd><p>A tuple of exception types to catch</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.ExceptionHandler.handler">
+<code class="sig-name descname"><span class="pre">handler</span></code><em class="property"><span class="pre">:</span> <span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#dynamodb_stream_router.router.StreamRecord" title="dynamodb_stream_router.router.StreamRecord"><span class="pre">dynamodb_stream_router.router.StreamRecord</span></a><span class="p"><span class="pre">,</span> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Exception</span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#dynamodb_stream_router.router.ExceptionHandler.handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>The callable that will be passed the original record and exception raised by the route callable that raised the exception</p>
 </dd></dl>
 
 </dd></dl>
@@ -550,9 +632,15 @@ or <a class="reference internal" href="#dynamodb-stream-router-conditions-expres
 <h2>router.Result<a class="headerlink" href="#router-result" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt id="dynamodb_stream_router.router.Result">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">Result</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">route</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#dynamodb_stream_router.router.Route" title="dynamodb_stream_router.router.Route"><span class="pre">dynamodb_stream_router.router.Route</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.Result" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">dynamodb_stream_router.router.</span></code><code class="sig-name descname"><span class="pre">Result</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">route</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#dynamodb_stream_router.router.Route" title="dynamodb_stream_router.router.Route"><span class="pre">dynamodb_stream_router.router.Route</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">dynamodb_stream_router.exceptions.HandledRouteException</span><span class="p"><span class="pre">,</span> </span><span class="pre">dynamodb_stream_router.exceptions.UnhandledRouteException</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynamodb_stream_router.router.Result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
 <p id="dynamodb-stream-router-router-result">The result returned by a route called by <a class="reference internal" href="#dynamodb-stream-router-router-streamrouter">dynamodb_stream_router.router.StreamRouter</a></p>
+<dl class="py attribute">
+<dt id="dynamodb_stream_router.router.Result.error">
+<code class="sig-name descname"><span class="pre">error</span></code><em class="property"><span class="pre">:</span> <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">dynamodb_stream_router.exceptions.HandledRouteException</span><span class="p"><span class="pre">,</span> </span><span class="pre">dynamodb_stream_router.exceptions.UnhandledRouteException</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#dynamodb_stream_router.router.Result.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Any errors that were raised during the route’s callable’s execution</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt id="dynamodb_stream_router.router.Result.record">
 <code class="sig-name descname"><span class="pre">record</span></code><em class="property"><span class="pre">:</span> <span class="pre">dict</span></em><a class="headerlink" href="#dynamodb_stream_router.router.Result.record" title="Permalink to this definition">¶</a></dt>
