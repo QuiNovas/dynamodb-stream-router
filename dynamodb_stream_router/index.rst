@@ -28,6 +28,15 @@ router.Route
    :show-inheritance:
 
 
+router.ExceptionHandler
+-----------------------
+
+.. autoclass:: dynamodb_stream_router.router.ExceptionHandler
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 router.StreamRecord
 -------------------
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.8
-from dynamodb_stream_router.router import StreamRouter, StreamRecord
+from dynamodb_stream_router.router import StreamRouter, StreamRecord, ExceptionHandler
 
 from time import time
 
@@ -109,20 +109,27 @@ records = [{
 }]
 
 
+def error_handler(record, e):
+    print(e)
+
+router.exception_handler = ExceptionHandler(handler=error_handler, exceptions=(Exception))
+
 record = StreamRecord(records[0])
 
-@router.update(condition_expression="NOT (attribute_exists($NEW.systemd) | attribute_exists($OLD.systemd))")
+@router.modify(condition_expression="NOT (attribute_exists($NEW.systemd) | attribute_exists($OLD.systemd))")
 def delete_tenant(record):
+    raise Exception("Exception from route handler")
     print(record._asdict())
 
 
 def handler():
     start = time()
     res = router.resolve_all([StreamRecord(x)._asdict() for x in records])
+    for x in res:
+        if x.error:
+            raise x.error
     print(time() - start)
-    print([
-        x.value for x in res
-    ])
+    print(res)
 
 
 if __name__ == "__main__":

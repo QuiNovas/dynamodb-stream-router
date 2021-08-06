@@ -9,11 +9,17 @@ from typing import (
     Callable,
     List,
     NamedTuple,
+    Tuple,
     Union,
     Any,
 )
 from .conditions.parser import Expression
-from .exceptions import ConditionError, MultipleRouteMatches
+from .exceptions import (
+    ConditionError,
+    MultipleRouteMatches,
+    UnhandledRouteException,
+    HandledRouteException
+)
 
 getLogger().setLevel("INFO")
 
@@ -35,31 +41,6 @@ class Operations(Enum):
 class StreamViewType(Enum):
     """The one and only type of stream we support"""
     NEW_AND_OLD_IMAGES = auto()
-
-
-class Route(NamedTuple):
-    """
-    .. _dynamodb_stream_router.router.Route:
-
-    A route object to be registered into an instance of `dynamodb_stream_router.router.StreamRouter`_
-    See the following for usage:
-
-        * `dynamodb_stream_router.router.StreamRouter.insert`_
-        * `dynamodb_stream_router.router.StreamRouter.remove`_
-        * `dynamodb_stream_router.router.StreamRouter.update`_
-        * `dynamodb_stream_router.router.StreamRouter.Route`_
-
-    """
-    #: The Callable that will be triggered if this route is a match for a record
-    callable: Callable
-    #: The operations that this route is registered for (MODIFY | INSERT | DELETE)
-    operations: List[Operations]
-    #: Optional `dynamodb_stream_router.conditions.Expression`_ string or Callable to be used for route matching
-    condition_expression: Union[Callable, str] = None
-    #: Optional Priority to assign to this route. All routes that match a record will be called in order of priority
-    priority: int = 0
-    #: Optional flag to indicate record processing should stop after this route is called
-    halt: bool = False
 
 
 __STREAM_RECORD_TYPES = (
@@ -171,6 +152,83 @@ class StreamRecord(
         return super().__new__(cls, **record)
 
 
+class ExceptionHandler(NamedTuple):
+    """
+    .. _dynamodb_stream_router.router.ExceptionHandler:
+
+    Provides a mechanism for attaching a callable to either the router or a specific route. When a route's callable
+    raises an exception and the route or router has `exception_handler` set, then the handler will be passed the record
+    and exception that was raised by the route's callable as arguments IF the exception is of a type in `ExceptionHandler.exceptions`.
+    Nothing is done with the return value of the handler
+
+
+    Example Usage:
+
+    .. highlight:: python
+    .. code-block:: python
+
+        from dynamodb_stream_router import StreamRouter, ExceptionHandler
+        from logging import getLogger
+
+
+        def error_handler(record, error):
+            print(record)
+            print(error)
+
+        router = StreamRouter()
+        router.exception_handler = ExceptionHandler(
+            handler=error_handler,
+            exceptions=(KeyError, ValueError)
+        )
+
+
+        @router.modify(condition_expression="$OLD.foo == True")
+        def handle_foo(record):
+            # Will trigger error_handler() to print the record and exception
+            raise ValueError("Caught an exception in handle_foo")
+
+
+        def handler(event, ctx):
+            router.resolve_all(event["Records"])
+
+
+    """
+
+    #: The callable that will be passed the original record and exception raised by the route callable that raised the exception
+    handler: Callable[[StreamRecord, Union[Exception, Any]], Any]
+    #: A tuple of exception types to catch
+    exceptions: Tuple[Union[Exception, Any]]
+
+
+class Route(NamedTuple):
+    """
+    .. _dynamodb_stream_router.router.Route:
+
+    A route object to be registered into an instance of `dynamodb_stream_router.router.StreamRouter`_
+    See the following for usage:
+
+        * `dynamodb_stream_router.router.StreamRouter.insert`_
+        * `dynamodb_stream_router.router.StreamRouter.remove`_
+        * `dynamodb_stream_router.router.StreamRouter.modify`_
+        * `dynamodb_stream_router.router.StreamRouter.Route`_
+
+    """
+    #: The Callable that will be triggered if this route is a match for a record
+    callable: Callable
+    #: The operations that this route is registered for (MODIFY | INSERT | DELETE)
+    operations: List[Operations]
+    #: Optional `dynamodb_stream_router.conditions.Expression`_ string or Callable to be used for route matching
+    condition_expression: Union[Callable, str] = None
+    #: Optional Priority to assign to this route. All routes that match a record will be called in order of priority
+    priority: int = 0
+    #: Optional flag to indicate record processing should stop after this route is called
+    halt: bool = False
+    #: Optional flat that indicates whether to halt all processing if a route raises an exception. If True then the exception will be raised, if False the exception will be placed in Result.error
+    halt_on_exception: bool = False
+    #: Optional callable that will be passed the record and exception that was raised in the case that the route's callable raises an exception
+    exception_handler: ExceptionHandler = None
+
+
 class Result(NamedTuple):
     """
     .. _dynamodb_stream_router.router.Result:
@@ -183,6 +241,8 @@ class Result(NamedTuple):
     record: dict
     #: The return value of the callable for the Route that was called
     value: Any
+    #: Any errors that were raised during the route's callable's execution
+    error: Union[HandledRouteException, UnhandledRouteException]
 
 
 class RouteSet(NamedTuple):
@@ -247,7 +307,7 @@ class StreamRouter:
                 }
             }]
 
-        @router.update(condition_expression="has_changed('type')")
+        @router.modify(condition_expression="has_changed('type')")
             def my_first_route(record):
                 return True
 
@@ -268,7 +328,7 @@ class StreamRouter:
 
         router = StreamRouter()
 
-        @router.update(condition_expression=lambda x: x.OldImage["type"] != x.NewImage["type"])
+        @router.modify(condition_expression=lambda x: x.OldImage["type"] != x.NewImage["type"])
         def my_first_route(record):
                 return True
 
@@ -282,7 +342,16 @@ class StreamRouter:
     __threaded = False
     __executor = None
 
-    def __new__(cls, *args, threads: int = None, threaded: bool = False, allow_multiple_matches: bool = True, **kwargs):
+    def __new__(
+        cls,
+        *args,
+        threads: int = None,
+        threaded: bool = False,
+        allow_multiple_matches: bool = True,
+        exception_handler: ExceptionHandler = None,
+        halt_on_exception: bool = True,
+        **kwargs
+    ):
         if not threaded and threads is not None:
             raise AttributeError(
                 "Argument 'threads' doesn't make sense if 'threaded=False'"
@@ -308,12 +377,19 @@ class StreamRouter:
         #: A list of dynamodb_stream_router.Route that are registered to the router
         self.routes: RouteSet = RouteSet(**{"REMOVE": [], "INSERT": [], "MODIFY": []})
         #: Whether or not to allow multiple routes to be called on a single record. If False and multiple routes are found for a record an exception will be raised
-        self.allow_multiple_matches = kwargs.get("allow_multiple_matches", True)
+        self.allow_multiple_matches: bool = kwargs.get("allow_multiple_matches", True)
+
+        #: If defined then a route handler that raises an exception defined in exception_handler will have its record, and the exception, passed to exception_handler.handler
+        self.exception_handler: ExceptionHandler = kwargs.get("exception_handler")
+
+        #: If defined then a route handler that raises an exception will propagate that exception. Otherwise the exception will be placed in the result and execution will continue
+        self.halt_on_exception: bool = kwargs.get("halt_on_exception")
+
         self._condition_parser = Expression()
 
-    def update(self, **kwargs) -> Callable:
+    def modify(self, **kwargs) -> Callable:
         """
-        .. _dynamodb_stream_router.router.StreamRouter.update:
+        .. _dynamodb_stream_router.router.StreamRouter.modify:
 
         Wrapper for StreamRouter.route(). Creates a route for "MODIFY" operation, taking an optional condition_expression
 
@@ -336,7 +412,7 @@ class StreamRouter:
             from dynamodb_stream_router.router import StreamRouter
 
 
-            @router.update(condition_expression="has_changed('foo')")
+            @router.modify(condition_expression="has_changed('foo')")
             def process_foo(record):
                 pass
 
@@ -412,7 +488,9 @@ class StreamRouter:
         operations: Union[str, List[str]],
         condition_expression: Union[Callable, str] = None,
         halt: bool = False,
-        priority: int = 0
+        priority: int = 0,
+        exception_handler: ExceptionHandler = None,
+        halt_on_exception: bool = None
     ) -> Callable:
 
         """
@@ -431,6 +509,13 @@ class StreamRouter:
             * *halt:* (``int``): Stop processing of record after this route is called. The same effect can be acheived by returning
               an object of type ``dynamodb_stream_router.router.Halt``. Default is False
             * *priority:* (``int``): The priority of this route in the list of any matching routes for a record. Default is 0
+            * *halt_on_exception:* (``bool``): If True and a route's callable raises an exception then the exception will be propagated,
+              otherwise the exception will be caught and placed in Result.error
+            * *exception_handler:* (``ExceptionHandler`` ): An instance of `dynamodb_stream_router.router.ExceptionHandler`_ that, if a
+              route's callable raises an exception AND the exception is of one of the types in exception_handler.exceptions, will have
+              its handler called with the record and exception that was raised passed as arguments. Nothing is done with the return
+              value of the handler and if `halt_on_exception` is set then the original exception will still be propagated
+
 
         :returns:
             ``Callable``
@@ -475,7 +560,9 @@ class StreamRouter:
                 callable=func,
                 condition_expression=condition_expression,
                 priority=priority,
-                halt=halt
+                halt=halt,
+                exception_handler=exception_handler,
+                halt_on_exception=halt_on_exception
             )
 
             for x in route.operations:
@@ -609,16 +696,47 @@ class StreamRouter:
 
         results = []
         for route in routes_to_call:
-            result = Result(
-                value=route.callable(record),
-                record=record,
-                route=route
-            )
+            result = self.__execute_route(route, record)
+
+            if result.error and (
+                route.halt_on_exception
+                or self.halt_on_exception
+            ):
+                raise result.error
+
             results.append(result)
+
             if route.halt or isinstance(result, Halt):
                 break
 
         return results
+
+    def __execute_route(self, route, record):
+        if handler := (route.exception_handler or self.exception_handler):
+            exceptions = handler.exceptions
+            returned_exception = HandledRouteException
+            handler = handler.handler
+        else:
+            exceptions = Exception
+            returned_exception = UnhandledRouteException
+            handler = None
+
+        result = {
+            "route": route,
+            "record": record,
+            "value": None,
+            "error": None
+        }
+
+        try:
+            result["value"] = route.callable(record)
+        except exceptions as e:
+            if handler:
+                handler(record, e)
+
+            result["error"] = returned_exception(e)
+
+        return Result(**result)
 
 
 def parse_image(image: dict):

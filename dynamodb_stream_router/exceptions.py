@@ -1,16 +1,28 @@
 
 
-class SyntaxError(Exception):
+class DynamodbStreamRouterException(Exception):
     pass
 
 
-class KeywordError(Exception):
+class SyntaxError(DynamodbStreamRouterException):
     pass
 
 
-class ConditionError(Exception):
+class KeywordError(DynamodbStreamRouterException):
     pass
 
 
-class MultipleRouteMatches(Exception):
+class ConditionError(DynamodbStreamRouterException):
+    pass
+
+
+class MultipleRouteMatches(DynamodbStreamRouterException):
+    pass
+
+
+class HandledRouteException(DynamodbStreamRouterException):
+    pass
+
+
+class UnhandledRouteException(DynamodbStreamRouterException):
     pass
