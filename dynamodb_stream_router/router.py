@@ -240,10 +240,9 @@ class Result(NamedTuple):
     #: The original stream record passed to the Route's callable
     record: dict
     #: The return value of the callable for the Route that was called
-    value: Any
+    value: Any = None
     #: Any errors that were raised during the route's callable's execution
-    error: Union[HandledRouteException, UnhandledRouteException]
-
+    error: Union[HandledRouteException, UnhandledRouteException] = None
 
 class RouteSet(NamedTuple):
     REMOVE: List[Route]
