@@ -38,27 +38,20 @@ class Operations(Enum):
     MODIFY = auto()
 
 
-class StreamViewType(Enum):
-    """The one and only type of stream we support"""
-    NEW_AND_OLD_IMAGES = auto()
-
-
-__STREAM_RECORD_TYPES = (
-    ("eventName", Operations),
-    ("StreamViewType", StreamViewType),
-    ("awsRegion", str),
-    ("eventID", str),
-    ("eventSource", str),
-    ("eventSourceARN", str),
-    ("eventVersion", str),
-    ("Keys", dict),
-    ("NewImage", dict),
-    ("OldImage", dict),
-    ("SequenceNumber", str),
-    ("SizeBytes", int),
-    ("original", dict)
-
-)
+class StreamRecordBase(NamedTuple):
+    eventName: Operations
+    awsRegion: str
+    eventID: str
+    eventSource: str
+    eventSourceARN: str
+    eventVersion: str
+    Keys: dict
+    NewImage: dict
+    OldImage: dict
+    SequenceNumber: str
+    SizeBytes: int
+    original: dict
+    StreamViewType: str = "NEW_AND_OLD_RECORDS"
 
 
 class Halt:
@@ -69,12 +62,7 @@ class Halt:
     pass
 
 
-class StreamRecord(
-    NamedTuple(
-        "StreamRecord",
-        __STREAM_RECORD_TYPES
-    )
-):
+class StreamRecord(StreamRecordBase):
     """
     .. _dynamodb_stream_router.router.StreamRecord:
 
@@ -84,7 +72,7 @@ class StreamRecord(
 
     :properties:
         * *eventName:* (``str``): MODIFY | INSERT | DELETE
-        * *StreamViewType:* (``str``): NEW_AND_OLD_IMAGES is the only one we support. Any other will cause an exception
+        * *StreamViewType:* (``str``): NEW_AND_OLD_IMAGES by default
         * *awsRegion:* (``str``)
         * *eventID:* (``str``)
         * *eventSource:* (``str``)
@@ -103,11 +91,7 @@ class StreamRecord(
     :returns:
         `dynamodb_stream_router.router.StreamRecord`_
     """
-    def __new__(cls, record):
-
-        if isinstance(record, cls):
-            return record
-
+    def __init__(self, record: dict):
         if "dynamodb" in record:
             for k in [
                 "NewImage",
@@ -149,7 +133,7 @@ class StreamRecord(
         except KeyError:
             raise TypeError(f"Unknown eventName {record['eventName']}'")
 
-        return super().__new__(cls, **record)
+        return super().__init__(**record)
 
 
 class ExceptionHandler(NamedTuple):
@@ -282,7 +266,6 @@ class StreamRouter:
         router = StreamRouter()
 
         records = [{
-            # Only NEW_AND_OLD_IMAGES are supported
                 "StreamViewType": "NEW_AND_OLD_IMAGES",
                 "eventName": "MODIFY",
                 "dynamodb": {
