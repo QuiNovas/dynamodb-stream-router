@@ -91,7 +91,7 @@ class StreamRecord(StreamRecordBase):
     :returns:
         `dynamodb_stream_router.router.StreamRecord`_
     """
-    def __init__(self, record: dict):
+    def __new__(cls, record: dict):
         if "dynamodb" in record:
             for k in [
                 "NewImage",
@@ -133,7 +133,7 @@ class StreamRecord(StreamRecordBase):
         except KeyError:
             raise TypeError(f"Unknown eventName {record['eventName']}'")
 
-        return super().__init__(**record)
+        return super().__new__(cls, **record)
 
 
 class ExceptionHandler(NamedTuple):
@@ -227,6 +227,7 @@ class Result(NamedTuple):
     value: Any = None
     #: Any errors that were raised during the route's callable's execution
     error: Union[HandledRouteException, UnhandledRouteException] = None
+
 
 class RouteSet(NamedTuple):
     REMOVE: List[Route]
