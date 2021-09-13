@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.8
 from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
 from logging import getLogger
 import typeguard
 from os import environ
@@ -92,6 +93,7 @@ class StreamRecord(StreamRecordBase):
         `dynamodb_stream_router.router.StreamRecord`_
     """
     def __new__(cls, record: dict):
+        original = deepcopy(record)
         if "dynamodb" in record:
             for k in [
                 "NewImage",
@@ -123,7 +125,7 @@ class StreamRecord(StreamRecordBase):
         }
 
         record = {
-            "original": record,
+            "original": original,
             **defaults,
             **record
         }
