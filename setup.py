@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='dynamodb-stream-router',
-    version='0.0.4',
+    version='0.0.5',
     description='A framework for content-based routing of records in a Dynamodb Stream to the callable that should handle them',
     author='Mathew Moon',
     author_email='mmoon@quinovas.com',
