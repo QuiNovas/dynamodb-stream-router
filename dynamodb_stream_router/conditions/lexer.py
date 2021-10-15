@@ -1,6 +1,6 @@
-# flake8: noqa
 # pyright: reportUndefinedVariable=false
 from sly import Lexer
+
 from ..exceptions import SyntaxError
 
 
@@ -28,6 +28,7 @@ class ExpressionLexer(Lexer):
         CONTAINS,
         SIZE,
         FROM_JSON,
+        KEYS,
         OLD_IMAGE,
         NEW_IMAGE,
         NAME,
@@ -35,7 +36,7 @@ class ExpressionLexer(Lexer):
         MATCH,
         IS_TYPE,
         FALSE,
-        TRUE
+        TRUE,
     }
 
     # Set of literal characters
@@ -63,7 +64,7 @@ class ExpressionLexer(Lexer):
     FROM_JSON = "from_json"
     SIZE = "size"
     TRUE = "True"
-    FALSE = "False",
+    FALSE = ("False",)
 
     """
     NAME has to come AFTER any keywords above. NAME is used as a path within OLD_IMAGE/NEW_IMAGE
@@ -88,6 +89,10 @@ class ExpressionLexer(Lexer):
 
     def error(self, t):
         if t.value[0] == "$":
-            raise SyntaxError(f"Invalid base path {t.value.split(' ')[0].split('.')[0]}")
+            raise SyntaxError(
+                f"Invalid base path {t.value.split(' ')[0].split('.')[0]}"
+            )
         else:
-            raise SyntaxError(f"Bad character '{t.value[0]}' at line {self.lineno} character {self.index}")
+            raise SyntaxError(
+                f"Bad character '{t.value[0]}' at line {self.lineno} character {self.index}"
+            )

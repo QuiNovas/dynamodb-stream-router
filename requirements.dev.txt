@@ -1,0 +1,7 @@
+black
+boto3
+build
+multipledispatch
+simplejson
+sly
+virtualenv
