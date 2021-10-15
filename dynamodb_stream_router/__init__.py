@@ -173,23 +173,23 @@ def route_record(
 ) -> None:
     operation = Operation[record["eventName"]]
     record: RouteRecord = RouteRecord(record)
-    for routes in groupby(
+    for _, routes in groupby(
         sorted(
             [route for route in __ROUTES[operation] if route.match(record)],
             key=lambda x: x._priority,
         ),
         key=lambda x: x._priority,
     ):
-        if len(routes) == 1:
-            routes[0](record)
-        else:
+        routes = list(routes)
+        routes[0](record) if len(routes) == 1 else list(
             (executor.map if executor else map)(
                 Route.__call__, routes, [record] * len[routes]
             )
+        )
 
 
 def route_records(
     records: list[Record],
     executor: Executor = None,
 ) -> None:
-    map(route_record, records, [executor] * len(records))
+    list(map(route_record, records, [executor] * len(records)))
