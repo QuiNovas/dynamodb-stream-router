@@ -45,7 +45,7 @@ class RouteRecord:
     def keys(self) -> dict[str, Any]:
         if self.__keys is None and "Keys" in self.__record["dynamodb"]:
             self.__keys = self.__DESRIALIZER.deserialize(
-                self.__record["dynamodb"]["Keys"]
+                dict(M=self.__record["dynamodb"]["Keys"])
             )
         return deepcopy(self.__keys)
 
@@ -53,7 +53,7 @@ class RouteRecord:
     def new_image(self) -> dict[str, Any]:
         if self.__new_image is None and "NewImage" in self.__record["dynamodb"]:
             self.__new_image = self.__DESRIALIZER.deserialize(
-                self.__record["dynamodb"]["NewImage"]
+                dict(M=self.__record["dynamodb"]["NewImage"])
             )
         return deepcopy(self.__new_image)
 
@@ -61,7 +61,7 @@ class RouteRecord:
     def old_image(self) -> dict[str, Any]:
         if self.__old_image is None and "OldImage" in self.__record["dynamodb"]:
             self.__old_image = self.__DESRIALIZER.deserialize(
-                self.__record["dynamodb"]["OldImage"]
+                dict(M=self.__record["dynamodb"]["OldImage"])
             )
         return deepcopy(self.__old_image)
 
