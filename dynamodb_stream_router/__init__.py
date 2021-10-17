@@ -98,65 +98,65 @@ RouteHandlerDecorator = Callable[[RouteHandler], Route]
 
 
 @dispatch(int)
-def on_insert(priority: int) -> RouteHandlerDecorator:
+def on_insert(priority: int, /) -> RouteHandlerDecorator:
     return on_insert(lambda _: True, priority)
 
 
 @dispatch(str, int)
-def on_insert(condition: str, priority: int) -> RouteHandlerDecorator:
+def on_insert(condition: str, priority: int, /) -> RouteHandlerDecorator:
     return on_operations({Operation.INSERT}, condition, priority)
 
 
 @dispatch(FunctionType, int)
-def on_insert(condition: Condition, priority: int) -> RouteHandlerDecorator:
+def on_insert(condition: Condition, priority: int, /) -> RouteHandlerDecorator:
     return on_operations({Operation.INSERT}, condition, priority)
 
 
 @dispatch(int)
-def on_modify(priority: int) -> RouteHandlerDecorator:
+def on_modify(priority: int, /) -> RouteHandlerDecorator:
     return on_modify(lambda _: True, priority)
 
 
 @dispatch(str, int)
-def on_modify(condition: str, priority: int) -> RouteHandlerDecorator:
+def on_modify(condition: str, priority: int, /) -> RouteHandlerDecorator:
     return on_operations({Operation.MODIFY}, condition, priority)
 
 
 @dispatch(FunctionType, int)
-def on_modify(condition: Condition, priority: int) -> RouteHandlerDecorator:
+def on_modify(condition: Condition, priority: int, /) -> RouteHandlerDecorator:
     return on_operations({Operation.MODIFY}, condition, priority)
 
 
 @dispatch(int)
-def on_remove(priority: int) -> RouteHandlerDecorator:
+def on_remove(priority: int, /) -> RouteHandlerDecorator:
     return on_remove(lambda _: True, priority)
 
 
 @dispatch(str, int)
-def on_remove(condition: str, priority: int) -> RouteHandlerDecorator:
+def on_remove(condition: str, priority: int, /) -> RouteHandlerDecorator:
     return on_operations({Operation.REMOVE}, condition, priority)
 
 
 @dispatch(FunctionType, int)
-def on_remove(condition: Condition, priority: int) -> RouteHandlerDecorator:
+def on_remove(condition: Condition, priority: int, /) -> RouteHandlerDecorator:
     return on_operations({Operation.REMOVE}, condition, priority)
 
 
 @dispatch(set, int)
-def on_operations(operations: set[Operation], priority: int) -> RouteHandlerDecorator:
+def on_operations(operations: set[Operation], priority: int, /) -> RouteHandlerDecorator:
     return on_operations(operations, lambda _: True, priority)
 
 
 @dispatch(set, str, int)
 def on_operations(
-    operations: set[Operation], condition: str, priority: int
+    operations: set[Operation], condition: str, priority: int, /
 ) -> RouteHandlerDecorator:
     return on_operations(operations, __CONDITION_PARSER.parse(condition), priority)
 
 
 @dispatch(set, FunctionType, int)
 def on_operations(
-    operations: set[Operation], condition: Condition, priority: int
+    operations: set[Operation], condition: Condition, priority: int, /
 ) -> RouteHandlerDecorator:
     def register_route(handler: RouteHandler) -> RouteHandler:
         route = Route(condition=condition, handler=handler, priority=priority or 0)
