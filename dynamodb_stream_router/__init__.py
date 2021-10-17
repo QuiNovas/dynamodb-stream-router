@@ -143,7 +143,9 @@ def on_remove(condition: Condition, priority: int, /) -> RouteHandlerDecorator:
 
 
 @dispatch(set, int)
-def on_operations(operations: set[Operation], priority: int, /) -> RouteHandlerDecorator:
+def on_operations(
+    operations: set[Operation], priority: int, /
+) -> RouteHandlerDecorator:
     return on_operations(operations, lambda _: True, priority)
 
 
