@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from base64 import b64decode
 from copy import deepcopy
 from typing import Any, TypedDict
 
@@ -32,8 +35,15 @@ class Record(TypedDict, total=False):
     userIdentity: Identity
 
 
+class StreamTypeDeserializer(TypeDeserializer):
+    def _deserialize_b(self, value):
+        if isinstance(value, str):
+            value = b64decode(value)
+        return super()._deserialize_b(value)
+
+
 class RouteRecord:
-    __DESRIALIZER = TypeDeserializer()
+    __DESRIALIZER = StreamTypeDeserializer()
 
     def __init__(self, record: Record) -> None:
         self.__keys: dict[str, Any] = None
