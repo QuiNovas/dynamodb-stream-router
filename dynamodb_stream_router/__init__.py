@@ -185,7 +185,7 @@ def route_record(
         routes = list(routes)
         routes[0](record) if len(routes) == 1 else list(
             (executor.map if executor else map)(
-                Route.__call__, routes, [record] * len[routes]
+                Route.__call__, routes, [record] * len(routes)
             )
         )
 
