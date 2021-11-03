@@ -43,7 +43,7 @@ class StreamTypeDeserializer(TypeDeserializer):
 
 
 class RouteRecord:
-    __DESRIALIZER = StreamTypeDeserializer()
+    __DESERIALIZER = StreamTypeDeserializer()
 
     def __init__(self, record: Record) -> None:
         self.__keys: dict[str, Any] = None
@@ -54,7 +54,7 @@ class RouteRecord:
     @property
     def keys(self) -> dict[str, Any]:
         if self.__keys is None and "Keys" in self.__record["dynamodb"]:
-            self.__keys = self.__DESRIALIZER.deserialize(
+            self.__keys = self.__DESERIALIZER.deserialize(
                 dict(M=self.__record["dynamodb"]["Keys"])
             )
         return deepcopy(self.__keys)
@@ -62,7 +62,7 @@ class RouteRecord:
     @property
     def new_image(self) -> dict[str, Any]:
         if self.__new_image is None and "NewImage" in self.__record["dynamodb"]:
-            self.__new_image = self.__DESRIALIZER.deserialize(
+            self.__new_image = self.__DESERIALIZER.deserialize(
                 dict(M=self.__record["dynamodb"]["NewImage"])
             )
         return deepcopy(self.__new_image)
@@ -70,7 +70,7 @@ class RouteRecord:
     @property
     def old_image(self) -> dict[str, Any]:
         if self.__old_image is None and "OldImage" in self.__record["dynamodb"]:
-            self.__old_image = self.__DESRIALIZER.deserialize(
+            self.__old_image = self.__DESERIALIZER.deserialize(
                 dict(M=self.__record["dynamodb"]["OldImage"])
             )
         return deepcopy(self.__old_image)
