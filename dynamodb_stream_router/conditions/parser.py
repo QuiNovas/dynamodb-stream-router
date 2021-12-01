@@ -274,13 +274,19 @@ class ExpressionParser(Parser):
         def has_changed(record, keys=key_list):
             for k in keys:
                 if (
-                    k not in record.old_image
-                    and k in self.new_image
-                    or k not in record.old_image
-                    and k in record.new_image
-                    or k in record.new_image
-                    and k in record.old_image
-                    and record.old_image[k] != record.new_image[k]
+                    (
+                        k not in record.old_image
+                        and k in record.new_image
+                    )
+                    or (
+                        k not in record.old_image
+                        and k in record.new_image
+                    )
+                    or (
+                        k in record.new_image
+                        and k in record.old_image
+                        and record.old_image[k] != record.new_image[k]
+                    )
                 ):
                     return True
 
