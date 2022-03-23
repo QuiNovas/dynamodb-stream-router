@@ -194,4 +194,5 @@ def route_records(
     records: list[Record],
     executor: Executor = None,
 ) -> None:
-    list(map(route_record, records, [executor] * len(records)))
+    for record in records:
+        route_record(record, executor)
